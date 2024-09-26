@@ -23,14 +23,7 @@ jobs:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@v4
         with:
-          persist-credentials: false  # Disable the default GitHub token
-          fetch-depth: 0  # Fetch all history for all branches and tags
-
-      - name: 'Set up Git Credentials'
-        run: |
-          git config --global url."https://${{ secrets.DB_WORKFLOW_TOKEN }}@github.com/".insteadOf "https://github.com/"
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
+          token: ${{ secrets.DB_WORKFLOW_TOKEN }}
 
       - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
         uses: actions/setup-dotnet@v1
