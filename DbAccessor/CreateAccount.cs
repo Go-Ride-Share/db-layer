@@ -10,14 +10,14 @@ namespace GoRideShare
     {
         private readonly ILogger<CreateAccount> _logger = logger;
 
-        [Function("CreateAccount")]
+        [Function("CreateUser")]
         public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
         {
-            UserInfo userToRegister = new(Guid.NewGuid(), "sample@email.com", 
+            UserRegistrationInfo userToRegister = new("sample@email.com", 
                 "cc3f4fd9608d575655ed31844b2349cf37be8ec5e4b0ec8ba9994fbc6653666f",
-                "Bob Marley", "RIP", "Json list of preferences", "14312245323", 20, 4.8, "pictureEncoding");
+                "Bob Marley", "RIP", "Json list of preferences", "14312245323", "pictureEncoding");
             
-            string json = JsonSerializer.Serialize<UserInfo>(userToRegister);
+            string json = JsonSerializer.Serialize<UserRegistrationInfo>(userToRegister);
 
             _logger.LogInformation("C# HTTP trigger function processed a request.");
             return new ContentResult
