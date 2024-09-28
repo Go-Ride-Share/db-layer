@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using MySql.Data.MySqlClient;
 using System.Text.Json;
 
 namespace GoRideShare
@@ -12,18 +12,51 @@ namespace GoRideShare
         private readonly ILogger<VerifyLoginCredentials> _logger = logger;
 
         [Function("VerifyLoginCredentials")]
-        public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
-            LoginCredentials loginCredentials = new("some email", "cc3f4fd9608d575655ed31844b2349cf37be8ec5e4b0ec8ba9994fbc6653666f");
-            string json = JsonSerializer.Serialize<LoginCredentials>(loginCredentials);
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            var userToLogin = JsonSerializer.Deserialize<LoginCredentials>(requestBody);
 
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
-            return new ContentResult
+            if (userToLogin == null || string.IsNullOrEmpty(userToLogin.Email))
             {
-                Content = json,
-                ContentType = "application/json",
-                StatusCode = StatusCodes.Status200OK
-            };
+                return new BadRequestObjectResult("Invalid data.");
+            }
+
+            string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                await connection.OpenAsync();
+
+                var query = "SELECT password_hash FROM users WHERE email = @Email";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Email", userToLogin.Email);
+
+                    try
+                    {
+                        var storedPasswordHash = (string?)await command.ExecuteScalarAsync();
+                        
+                        if (storedPasswordHash == null)
+                        {
+                            return new UnauthorizedResult();
+                        }
+
+                        if (storedPasswordHash != userToLogin.PasswordHash)
+                        {
+                            return new UnauthorizedResult();
+                        }
+                        
+                        return new OkObjectResult("User logged in successfully.");
+
+                    }
+                    catch (MySqlException ex)
+                    {
+                        _logger.LogError("Database error: " + ex.Message);
+                        return new BadRequestObjectResult("Error querying the database.");
+                    }
+                }
+            }
         }
     }
 }
