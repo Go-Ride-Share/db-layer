@@ -47,7 +47,7 @@ namespace GoRideShare
                     {
                         await command.ExecuteNonQueryAsync();
                         _logger.LogInformation("User created successfully.");
-                        return new OkObjectResult("User created successfully.");
+                        return new OkObjectResult("User account created successfully.");
                     }
                     catch (MySqlException ex)
                     {

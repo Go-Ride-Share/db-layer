@@ -19,7 +19,7 @@ namespace GoRideShare
 
             if (userToLogin == null || string.IsNullOrEmpty(userToLogin.Email))
             {
-                return new BadRequestObjectResult("Invalid data.");
+                return new BadRequestObjectResult("Invalid user data.");
             }
 
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
