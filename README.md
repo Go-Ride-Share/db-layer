@@ -1,5 +1,27 @@
 ## `DbAccessor` Function App API Definition
 
+### /CreateUser
+Request paylaod template:
+```
+{
+    email: "test@email.com",
+    password: "hashed_password_here",
+    name: "testName",
+    bio: "testBio",
+    phone: "4312245323",
+    photo: "testPhotoUrl"
+}
+```
+
+### /VerifyLoginCredentials
+Request paylaod template:
+```
+{
+    email: "test@email.com",
+    password: "hashed_password_here"
+}
+```
+
 ### /findrides/intercity
 Request paylaod template:
 ```
