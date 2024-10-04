@@ -4,12 +4,12 @@
 Request paylaod template:
 ```
 {
-    email: "test@email.com",
-    password: "hashed_password_here",
-    name: "testName",
-    bio: "testBio",
-    phone: "4312245323",
-    photo: "testPhotoUrl"
+    email: string, ex "test@email.com",
+    password: string, ex "testPassword",
+    name: string, ex "testName",
+    bio: string, ex "testBio",
+    phone: string, ex "4312245323",
+    photo: string, ex "testPhotoUrl"
 }
 ```
 
@@ -17,8 +17,8 @@ Request paylaod template:
 Request paylaod template:
 ```
 {
-    email: "test@email.com",
-    password: "hashed_password_here"
+    email: string, ex "test@email.com",
+    password: string, ex "testPassword"
 }
 ```
 
