@@ -12,7 +12,7 @@ namespace GoRideShare
     }
 
     public class UserRegistrationInfo(string email, string passwordHash, string name,
-                    string bio, List<string> preferences, string phoneNumber, string photo)
+                    string bio, string phoneNumber, string photo)
     {
         [JsonPropertyName("email")]
         public string Email { get; set; } = email;
@@ -25,9 +25,6 @@ namespace GoRideShare
 
         [JsonPropertyName("bio")]
         public string Bio { get; set; } = bio;
-
-        [JsonPropertyName("preferences")]
-        public List<string> Preferences { get; set; } = preferences;
 
         [JsonPropertyName("phone")]
         public string PhoneNumber { get; set; } = phoneNumber;
