@@ -54,8 +54,8 @@ namespace GoRideShare
                 }
 
                 // Use a parameterized query to insert the user data
-                var query = "INSERT INTO users (user_id, email, password_hash, name, bio, preferences, phone_number, photo) " +
-                            "VALUES (UUID(), @Email, @PasswordHash, @Name, @Bio, @Preferences, @PhoneNumber, @Photo)";
+                var query = "INSERT INTO users (user_id, email, password_hash, name, bio, phone_number, photo) " +
+                            "VALUES (UUID(), @Email, @PasswordHash, @Name, @Bio, @PhoneNumber, @Photo)";
 
                  // Use parameterized query to prevent SQL injection
                 using (var command = new MySqlCommand(query, connection))
@@ -64,7 +64,6 @@ namespace GoRideShare
                     command.Parameters.AddWithValue("@PasswordHash", userToRegister.PasswordHash);
                     command.Parameters.AddWithValue("@Name", userToRegister.Name);
                     command.Parameters.AddWithValue("@Bio", userToRegister.Bio);
-                    command.Parameters.AddWithValue("@Preferences", JsonSerializer.Serialize(userToRegister.Preferences));
                     command.Parameters.AddWithValue("@PhoneNumber", userToRegister.PhoneNumber);
                     command.Parameters.AddWithValue("@Photo", userToRegister.Photo);
 
