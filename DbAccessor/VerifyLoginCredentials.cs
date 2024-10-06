@@ -50,7 +50,7 @@ namespace GoRideShare
                 }
 
                 // Query to check if the email exists in the database and retrieve the password hash
-                var query = "SELECT password_hash FROM users WHERE email = @Email";
+                var query = "SELECT user_id, password_hash FROM users WHERE email = @Email";
 
                 // Execute the SQL query using a parameterized command to prevent SQL injection
                 using (var command = new MySqlCommand(query, connection))
@@ -59,27 +59,38 @@ namespace GoRideShare
 
                     try
                     {
-                        // Execute the query and retrieve the stored password hash from the database
-                        var storedPasswordHash = (string?)await command.ExecuteScalarAsync();
-
-                        if (storedPasswordHash == null)
+                        using (var reader = await command.ExecuteReaderAsync())
                         {
-                            // Return 401 Unauthorized, if no password is found
-                            return new UnauthorizedResult();
-                        }
+                            if (await reader.ReadAsync())
+                            {
+                                var storedUserId = reader.IsDBNull(0) ? null : reader.GetGuid(0).ToString();
+                                var storedPasswordHash = reader.IsDBNull(1) ? null : reader.GetString(1);
 
-                        if (storedPasswordHash != userToLogin.PasswordHash)
-                        {
-                            // Return 401 if the password is incorrect
-                            return new UnauthorizedResult();
-                        }
+                                if (storedPasswordHash == null || storedUserId == null)
+                                {
+                                    // Return 401 Unauthorized, if no password is found
+                                    return new UnauthorizedResult();
+                                }
 
-                        // If the password is correct, return 200 OK
-                        return new OkObjectResult("User logged in successfully.");
+                                if (storedPasswordHash != userToLogin.PasswordHash)
+                                {
+                                    // Return 401 if the password is incorrect
+                                    return new UnauthorizedResult();
+                                }
+
+                                // If the password is correct, return 200 OK
+                                return new OkObjectResult(new { User_id = storedUserId });
+                            }
+                            else
+                            {
+                                // Return 401 Unauthorized if no user is found
+                                return new UnauthorizedResult();
+                            }
+                        }
 
                     }
                     catch (MySqlException ex)
-                    {   
+                    {
                         // Log any database errors and return a 400 Bad Request with the error message
                         _logger.LogError("Database error: " + ex.Message);
                         return new BadRequestObjectResult("Error querying the database: " + ex.Message);

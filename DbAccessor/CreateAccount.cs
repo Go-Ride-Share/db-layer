@@ -53,13 +53,17 @@ namespace GoRideShare
                     return new StatusCodeResult(StatusCodes.Status500InternalServerError);
                 }
 
+                // Generate a new UUID for the user_id
+                string userId = Guid.NewGuid().ToString();
+
                 // Use a parameterized query to insert the user data
                 var query = "INSERT INTO users (user_id, email, password_hash, name, bio, phone_number, photo) " +
-                            "VALUES (UUID(), @Email, @PasswordHash, @Name, @Bio, @PhoneNumber, @Photo)";
+                            "VALUES (@UserId, @Email, @PasswordHash, @Name, @Bio, @PhoneNumber, @Photo)";
 
                  // Use parameterized query to prevent SQL injection
                 using (var command = new MySqlCommand(query, connection))
                 {
+                    command.Parameters.AddWithValue("@userId", userId);
                     command.Parameters.AddWithValue("@Email", userToRegister.Email);
                     command.Parameters.AddWithValue("@PasswordHash", userToRegister.PasswordHash);
                     command.Parameters.AddWithValue("@Name", userToRegister.Name);
@@ -71,7 +75,7 @@ namespace GoRideShare
                     {
                         await command.ExecuteNonQueryAsync();
                         _logger.LogInformation("User created successfully.");
-                        return new OkObjectResult("User account created successfully.");
+                        return new OkObjectResult(new { User_id = userId });
                     }
                     catch (MySqlException ex)
                     {
