@@ -55,7 +55,7 @@ namespace GoRideShare
                 // Execute the SQL query using a parameterized command to prevent SQL injection
                 using (var command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@Email", userToLogin.Email);
+                    command.Parameters.AddWithValue("@Email", userToLogin.Email.ToLower());
 
                     try
                     {

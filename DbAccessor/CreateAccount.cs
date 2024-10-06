@@ -64,7 +64,7 @@ namespace GoRideShare
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@userId", userId);
-                    command.Parameters.AddWithValue("@Email", userToRegister.Email);
+                    command.Parameters.AddWithValue("@Email", userToRegister.Email.ToLower());
                     command.Parameters.AddWithValue("@PasswordHash", userToRegister.PasswordHash);
                     command.Parameters.AddWithValue("@Name", userToRegister.Name);
                     command.Parameters.AddWithValue("@Bio", userToRegister.Bio);
