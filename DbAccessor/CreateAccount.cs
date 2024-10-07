@@ -69,7 +69,7 @@ namespace GoRideShare
                     command.Parameters.AddWithValue("@Name", userToRegister.Name);
                     command.Parameters.AddWithValue("@Bio", userToRegister.Bio);
                     command.Parameters.AddWithValue("@PhoneNumber", userToRegister.PhoneNumber);
-                    command.Parameters.AddWithValue("@Photo", userToRegister.Photo);
+                    command.Parameters.AddWithValue("@Photo", Convert.FromBase64String(userToRegister.Photo));
 
                     try
                     {
