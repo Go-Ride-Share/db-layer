@@ -97,4 +97,10 @@ namespace GoRideShare
         }
     }
 
+    public class getPostsRequest(string userId)
+    {
+        [JsonPropertyName("userId")]
+        public string UserId { get; set; } = userId;
+    }
+
 }
