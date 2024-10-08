@@ -12,6 +12,7 @@ namespace GoRideShare
     {
         private readonly ILogger<VerifyLoginCredentials> _logger = logger;
 
+        // This function is triggered by an HTTP POST request
         [Function("VerifyLoginCredentials")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
@@ -81,7 +82,7 @@ namespace GoRideShare
                                 // Return 401 Unauthorized if no user is found
                                 return new ObjectResult("Invalid login credentials.")
                                 {
-                                        StatusCode = StatusCodes.Status401Unauthorized
+                                    StatusCode = StatusCodes.Status401Unauthorized
                                 };
                             }
                         }

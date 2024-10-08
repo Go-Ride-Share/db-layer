@@ -7,10 +7,10 @@ using MySql.Data.MySqlClient;
 
 namespace GoRideShare
 {
+    // This class handles creating a new user account
     public class CreateAccount(ILogger<CreateAccount> logger)
     {
         private readonly ILogger<CreateAccount> _logger = logger;
-
 
         // Returns UserId if registration is successful, error otherwise.
         [Function("CreateUser")]
@@ -86,7 +86,6 @@ namespace GoRideShare
                     }
                 }
             }
-
         }
     }
 }
