@@ -12,13 +12,13 @@ namespace GoRideShare
     {
         private readonly ILogger<CreateAccount> _logger = logger;
 
-        // This function is triggered by an HTTP POST request to create a user
+        // Returns UserId if registration is successful, error otherwise.
         [Function("CreateUser")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
             // Read the request body to get the user's registration information
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var userToRegister = JsonSerializer.Deserialize<UserRegistrationInfo>(requestBody);
+            UserRegistrationInfo? userToRegister = JsonSerializer.Deserialize<UserRegistrationInfo>(requestBody);
 
             _logger.LogInformation($"Raw Request Body: {requestBody}");
 
@@ -27,6 +27,7 @@ namespace GoRideShare
             string.IsNullOrEmpty(userToRegister.Name) || string.IsNullOrEmpty(userToRegister.PasswordHash)
             || string.IsNullOrEmpty(userToRegister.PhoneNumber))
             {
+                _logger.LogInformation("Incomplete user data.");
                 return new BadRequestObjectResult("Incomplete user data.");
             }
 
