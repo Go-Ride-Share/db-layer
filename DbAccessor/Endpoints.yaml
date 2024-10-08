@@ -1,8 +1,8 @@
 openapi: "3.0.0"
 info:
   version: 1.0.0
-  title: Go Ride Share Logic API
-  description: <h3> Internal Logic API for Post Operations
+  title: Go Ride Share DB Layer API
+  description: <h3> Internal DB API for Post Operations
 
 paths:
   /api/createPost:
