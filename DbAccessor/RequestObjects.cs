@@ -11,13 +11,7 @@ namespace GoRideShare
         public string PasswordHash { get; set; } = passwordHash;
     }
 
-    public class UserRegistrationInfo(
-        string email, 
-        string passwordHash, 
-        string name,
-        string bio, 
-        string phoneNumber, 
-        string photo)
+    public class UserRegistrationInfo
     {
         [JsonPropertyName("email")]
         public string? Email { get; set; }
