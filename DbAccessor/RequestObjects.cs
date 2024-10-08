@@ -14,19 +14,19 @@ namespace GoRideShare
     public class UserRegistrationInfo
     {
         [JsonPropertyName("email")]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [JsonPropertyName("password")]
-        public string PasswordHash { get; set; }
+        public string? PasswordHash { get; set; }
 
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonPropertyName("bio")]
-        public string Bio { get; set; }
+        public string? Bio { get; set; }
 
         [JsonPropertyName("phone")]
-        public string PhoneNumber { get; set; }
+        public string? PhoneNumber { get; set; }
 
         [JsonPropertyName("photo")]
         public string? Photo { get; set; }
