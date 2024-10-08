@@ -12,9 +12,9 @@ namespace GoRideShare
     {
         private readonly ILogger<UpdatePost> _logger = logger;
 
-        // This function is triggered by an HTTP POST request to create a new post
+        // This function is triggered by an HTTP PATCH request to create a new post
         [Function("UpdatePost")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "patch")] HttpRequest req)
         {
             // Read the request body to get the post details
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();

@@ -23,25 +23,52 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessfulResponse"       
+                $ref: "#/components/schemas/SuccessfulPostResponse"       
         '400':
           description: Unsuccessful
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnsuccessfulResponse"      
-  /api/getPosts:
+                $ref: "#/components/schemas/UnsuccessfulResponse"  
+  /api/updatePost:
+      patch:
+        summary: Save a completed post to the databse
+        operationId: updatePost
+        tags:
+          - Posts
+        requestBody:
+          required: true
+          content:  
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostObject'   
+        responses:
+          '200':
+            description:  Success
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/SuccessfulPostResponse"       
+          '400':
+            description: Unsuccessful
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/UnsuccessfulResponse"                    
+  /api/getPosts/{user_id}:
     get:
       summary: Save a completed post to the databse
-      operationId: createPost
+      operationId: getPosts
       tags:
         - Posts
-      requestBody:
-        required: true
-        content:  
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetRequest'   
+      parameters:
+        - name: user_id
+          in: path
+          description: The ID of the user whos posts you want to query
+          required: true
+          schema:
+            type: string
+            format: string    
       responses:   
         '200':
           description:  Success
@@ -103,7 +130,9 @@ components:
       type: object
       properties:
         post_id:
-          type: array        
+          type: array
+          items:
+            type: object     
     SuccessfulPostResponse:
       type: object
       required:
