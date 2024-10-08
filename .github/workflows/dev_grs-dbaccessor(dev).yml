@@ -1,14 +1,14 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy DbAccessor
+name: Build and deploy dev DbAccessor
 
 on:
   push:
     branches:
-      - main
+      - dev
     paths:
-      - 'DbAccessor/**'
+      -'DbAccessor/**'
   workflow_dispatch:
 
 env:
@@ -42,15 +42,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_CA88362E78124753B2E5896A8D7B18BA }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F2B713E4601D4001805B5BE0E2CADF37 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_03F48C4B69EA4812ADDC1A64A94A6B53 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_37783D91EC3B4350B6690466E3F9DE9C }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_94F2365355644C419ACF9288EFFB9B36 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_FF395717E03848209E011628F0CD0FAB }}
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
-          app-name: 'GRS-DbAccessor'
-          slot-name: 'Production'
+          app-name: 'grs-dbaccessor'
+          slot-name: 'dev'
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
           

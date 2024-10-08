@@ -50,7 +50,7 @@ namespace GoRideShare
                 }
 
                 // Query to check if the email exists in the database and retrieve the password hash
-                var query = "SELECT user_id, password_hash FROM users WHERE email = @Email";
+                var query = "SELECT user_id, password_hash, photo FROM users WHERE email = @Email";
 
                 // Execute the SQL query using a parameterized command to prevent SQL injection
                 using (var command = new MySqlCommand(query, connection))
@@ -65,6 +65,7 @@ namespace GoRideShare
                             {
                                 var storedUserId = reader.IsDBNull(0) ? null : reader.GetGuid(0).ToString();
                                 var storedPasswordHash = reader.IsDBNull(1) ? null : reader.GetString(1);
+                                var storedPhoto = reader.IsDBNull(2) ? null : reader.GetString(2);;
 
                                 if (storedPasswordHash == null || storedUserId == null)
                                 {
@@ -77,9 +78,9 @@ namespace GoRideShare
                                     // Return 401 if the password is incorrect
                                     return new UnauthorizedResult();
                                 }
-
+                                
                                 // If the password is correct, return 200 OK
-                                return new OkObjectResult(new { User_id = storedUserId });
+                                return new OkObjectResult(new { User_id = storedUserId, Photo = storedPhoto });
                             }
                             else
                             {
