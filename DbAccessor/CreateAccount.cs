@@ -10,22 +10,82 @@ namespace GoRideShare
     {
         private readonly ILogger<CreateAccount> _logger = logger;
 
+
+        // Returns UserId if registration is successful, error otherwise.
         [Function("CreateUser")]
         public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
         {
-            UserRegistrationInfo userToRegister = new("sample@email.com", 
-                "cc3f4fd9608d575655ed31844b2349cf37be8ec5e4b0ec8ba9994fbc6653666f",
-                "Bob Marley", "RIP", "Json list of preferences", "14312245323", "pictureEncoding");
-            
-            string json = JsonSerializer.Serialize<UserRegistrationInfo>(userToRegister);
+            // Read the request body to get the user's registration information
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            UserRegistrationInfo? userToRegister = JsonSerializer.Deserialize<UserRegistrationInfo>(requestBody);
 
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
-            return new ContentResult
+            _logger.LogInformation($"Raw Request Body: {requestBody}");
+
+            // Validate if essential user data is present
+            if (userToRegister == null || string.IsNullOrEmpty(userToRegister.Email) ||
+            string.IsNullOrEmpty(userToRegister.Name) || string.IsNullOrEmpty(userToRegister.PasswordHash)
+            || string.IsNullOrEmpty(userToRegister.PhoneNumber))
             {
-                Content = json,
-                ContentType = "application/json",
-                StatusCode = StatusCodes.Status200OK
-            };
+                _logger.LogInformation("Incomplete user data.");
+                return new BadRequestObjectResult("Incomplete user data.");
+            }
+
+            // Retrieve the database connection string from environment variables
+            string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                // Validate the connection string before trying to open the connection
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    _logger.LogError("Invalid connection string.");
+                    return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                }
+
+                try
+                {
+                    // open the connection with the database
+                    await connection.OpenAsync();
+                }
+                catch (MySqlException ex)
+                {
+                    // Log the error and return an appropriate response
+                    _logger.LogError($"Failed to open database connection: {ex.Message}");
+                    return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                }
+
+                // Generate a new UUID for the user_id
+                string userId = Guid.NewGuid().ToString();
+
+                // Use a parameterized query to insert the user data
+                var query = "INSERT INTO users (user_id, email, password_hash, name, bio, phone_number, photo) " +
+                            "VALUES (@UserId, @Email, @PasswordHash, @Name, @Bio, @PhoneNumber, @Photo)";
+
+                 // Use parameterized query to prevent SQL injection
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@userId", userId);
+                    command.Parameters.AddWithValue("@Email", userToRegister.Email.ToLower());
+                    command.Parameters.AddWithValue("@PasswordHash", userToRegister.PasswordHash);
+                    command.Parameters.AddWithValue("@Name", userToRegister.Name);
+                    command.Parameters.AddWithValue("@Bio", userToRegister.Bio);
+                    command.Parameters.AddWithValue("@PhoneNumber", userToRegister.PhoneNumber);
+                    command.Parameters.AddWithValue("@Photo", userToRegister.Photo);
+
+                    try
+                    {
+                        await command.ExecuteNonQueryAsync();
+                        _logger.LogInformation("User created successfully.");
+                        return new OkObjectResult(new { User_id = userId });
+                    }
+                    catch (MySqlException ex)
+                    {
+                        // Log the error if the query fails and return a 400 Bad Request response
+                        _logger.LogError("Database error: " + ex.Message);
+                        return new BadRequestObjectResult("Error inserting user into the database: " + ex.Message);
+                    }
+                }
+            }
+
         }
     }
 }
