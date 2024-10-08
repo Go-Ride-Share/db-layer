@@ -10,7 +10,6 @@ namespace GoRideShare
     {
         private readonly ILogger<GetUser> _logger = logger;
 
-
         [Function("GetUser")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
