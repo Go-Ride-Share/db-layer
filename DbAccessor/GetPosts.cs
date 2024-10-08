@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -16,17 +15,13 @@ namespace GoRideShare
         [Function("GetPosts")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
-
-            // Read the request body to get the user's registration information
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var getPostsRequest = JsonSerializer.Deserialize<getPostsRequest>(requestBody);
-            _logger.LogInformation($"Raw Request Body: {requestBody}");
-
-            // Validate if essential user data is present
-            if (getPostsRequest == null || string.IsNullOrEmpty(getPostsRequest.UserId))
+            _logger.LogInformation("userId");
+            // Validate if essential data is present
+            if (!req.Query.TryGetValue("userId", out var userId))
             {
-                return new BadRequestObjectResult("User Id invalid .");
+                return new BadRequestObjectResult("Missing User-ID");
             }
+            _logger.LogInformation(userId);
 
             // Retrieve the database connection string from environment variables
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
@@ -36,7 +31,10 @@ namespace GoRideShare
                 if (string.IsNullOrWhiteSpace(connectionString))
                 {
                     _logger.LogError("Invalid connection string.");
-                    return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                    return new ObjectResult("Invalid database credentials.")
+                    {
+                        StatusCode = StatusCodes.Status401Unauthorized
+                    };
                 }
 
                 try
@@ -48,7 +46,10 @@ namespace GoRideShare
                 {
                     // Log the error and return an appropriate response
                     _logger.LogError($"Failed to open database connection: {ex.Message}");
-                    return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                    return new ObjectResult("Failed to open database connection.")
+                    {
+                        StatusCode = StatusCodes.Status500InternalServerError
+                    };
                 }
 
                 // Use a parameterized query to insert the post details
@@ -57,7 +58,7 @@ namespace GoRideShare
                  // Use parameterized query to prevent SQL injection
                 using (var command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@Poster_id", getPostsRequest.UserId);
+                    command.Parameters.AddWithValue("@Poster_id", userId);
 
                     try
                     {
@@ -72,6 +73,7 @@ namespace GoRideShare
                                     PosterId = reader["poster_id"].ToString(),
                                     Name = reader["name"].ToString(),
                                     Description = reader["description"].ToString(),
+                                    DepartureDate = reader["departure_date"].ToString(),
                                     OriginLat = reader.GetFloat(reader.GetOrdinal("origin_lat")),
                                     OriginLng = reader.GetFloat(reader.GetOrdinal("origin_lng")),
                                     DestinationLat = reader.GetFloat(reader.GetOrdinal("destination_lat")),

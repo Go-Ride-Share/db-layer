@@ -70,6 +70,9 @@ namespace GoRideShare
         [JsonPropertyName("seatsAvailable")]
         public int SeatsAvailable { get; set; }
 
+        [JsonPropertyName("departureDate")]
+        public required string DepartureDate { get; set; }
+
         public PostDetails() { }
 
         public PostDetails(
@@ -77,6 +80,7 @@ namespace GoRideShare
             string posterId,
             string name,
             string description,
+            string departureDate,
             float originLat,
             float originLng,
             float destinationLat,
@@ -94,13 +98,7 @@ namespace GoRideShare
             DestinationLng = destinationLng;
             Price = price;
             SeatsAvailable = seatsAvailable;
+            DepartureDate = departureDate;
         }
     }
-
-    public class getPostsRequest(string userId)
-    {
-        [JsonPropertyName("userId")]
-        public string UserId { get; set; } = userId;
-    }
-
 }
