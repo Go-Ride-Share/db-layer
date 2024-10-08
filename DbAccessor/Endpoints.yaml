@@ -1,0 +1,150 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Go Ride Share DB Layer API
+  description: <h3> Internal DB API for Post Operations
+
+paths:
+  /api/createPost:
+    post:
+      summary: Save a completed post to the databse
+      operationId: createPost
+      tags:
+        - Posts
+      requestBody:
+        required: true
+        content:  
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostObject'   
+      responses:
+        '200':
+          description:  Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessfulPostResponse"       
+        '400':
+          description: Unsuccessful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"  
+  /api/updatePost:
+      patch:
+        summary: Save a completed post to the databse
+        operationId: updatePost
+        tags:
+          - Posts
+        requestBody:
+          required: true
+          content:  
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostObject'   
+        responses:
+          '200':
+            description:  Success
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/SuccessfulPostResponse"       
+          '400':
+            description: Unsuccessful
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/UnsuccessfulResponse"                    
+  /api/getPosts/{user_id}:
+    get:
+      summary: Save a completed post to the databse
+      operationId: getPosts
+      tags:
+        - Posts
+      parameters:
+        - name: user_id
+          in: path
+          description: The ID of the user whos posts you want to query
+          required: true
+          schema:
+            type: string
+            format: string    
+      responses:   
+        '200':
+          description:  Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostList"          
+        '400':
+          description: Unsuccessful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"                            
+
+components:
+  schemas:
+    PostObject:
+      type: object
+      required:
+        - name
+        - originLng
+        - originLat
+        - destinationLng
+        - destinationLat
+        - departureDate
+        - price 
+        - seatsAvailable
+      properties:
+        name:
+          type: string  
+        originLng:
+          type: number
+          format: float  
+        originLat:
+          type: number
+          format: float  
+        destinationLng:
+          type: number
+          format: float  
+        destinationLat:
+          type: number
+          format: float  
+        departureDate:
+          type: string  
+        price:
+          type: number
+          format: float                 
+        seatsAvailable:
+          type: number
+          format: float   
+    GetRequest:
+      type: object
+      required:
+        - user_id
+      properties:
+        post_id:
+          type: string  
+    PostList:
+      type: object
+      properties:
+        post_id:
+          type: array
+          items:
+            type: object     
+    SuccessfulPostResponse:
+      type: object
+      required:
+        - post_id
+      properties:
+        post_id:
+          type: string           
+    UnsuccessfulResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string      
+          default: "Incomplete post data" 
