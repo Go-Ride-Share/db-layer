@@ -29,7 +29,7 @@ namespace GoRideShare
             }
 
             // Read and deserialize the request body
-            UserRegistrationInfo updatedUserInfo;
+            UserRegistrationInfo? updatedUserInfo;
             try
             {
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
