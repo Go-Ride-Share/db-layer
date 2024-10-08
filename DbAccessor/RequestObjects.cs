@@ -1,4 +1,5 @@
 using System.Configuration;
+using System.Text.Json.Serialization;
 
 namespace GoRideShare
 {
@@ -14,7 +15,9 @@ namespace GoRideShare
         string name,
         string bio, 
         string phoneNumber, 
-        string photo)
+        string photo, 
+        string preferences
+        )
 
     {
         public string Email { get; set; } = email;
