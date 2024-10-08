@@ -1,26 +1,27 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using MySql.Data.MySqlClient;
 using System.Text.Json;
 
 namespace GoRideShare
 {
+    // This class handles login credential verification
     public class VerifyLoginCredentials(ILogger<VerifyLoginCredentials> logger)
     {
         private readonly ILogger<VerifyLoginCredentials> _logger = logger;
 
         [Function("VerifyLoginCredentials")]
-        public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
-            LoginCredentials loginCredentials = new("some email", "cc3f4fd9608d575655ed31844b2349cf37be8ec5e4b0ec8ba9994fbc6653666f");
-            string json = JsonSerializer.Serialize<LoginCredentials>(loginCredentials);
+            // Read the request body to get the user's login data (email and password hash)
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            var userToLogin = JsonSerializer.Deserialize<LoginCredentials>(requestBody);
 
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
-            return new ContentResult
+            // Check if user data is missing or invalid
+            if (userToLogin == null || string.IsNullOrEmpty(userToLogin.Email) || string.IsNullOrEmpty(userToLogin.PasswordHash))
             {
-
                 return new BadRequestObjectResult("Incomplete user data.");
             }
 
@@ -80,7 +81,7 @@ namespace GoRideShare
                                 // Return 401 Unauthorized if no user is found
                                 return new ObjectResult("Invalid login credentials.")
                                 {
-                                    StatusCode = StatusCodes.Status401Unauthorized
+                                        StatusCode = StatusCodes.Status401Unauthorized
                                 };
                             }
                         }
