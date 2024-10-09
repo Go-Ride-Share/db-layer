@@ -11,7 +11,7 @@ namespace GoRideShare
     {
         private readonly ILogger<GetPosts> _logger = logger;
 
-        // This function is triggered by an HTTP POST request to create a new post
+        // This function is triggered by an HTTP GET request to fetch a users posts
         [Function("GetPosts")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
@@ -52,7 +52,7 @@ namespace GoRideShare
                     };
                 }
 
-                // Use a parameterized query to insert the post details
+                // Use a parameterized query to fetch the post details
                 var query = "SELECT * FROM posts WHERE poster_id = @Poster_id";
 
                  // Use parameterized query to prevent SQL injection
@@ -91,7 +91,7 @@ namespace GoRideShare
                     {
                         // Log the error if the query fails and return a 400 Bad Request response
                         _logger.LogError("Database error: " + ex.Message);
-                        return new BadRequestObjectResult("Error inserting post into the database: " + ex.Message);
+                        return new BadRequestObjectResult("Error fetching posts from the database: " + ex.Message);
                     }
                 }
             }
