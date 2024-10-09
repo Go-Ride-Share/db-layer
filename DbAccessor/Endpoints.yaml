@@ -7,7 +7,7 @@ info:
 paths:
   /api/createPost:
     post:
-      summary: Save a completed post to the databse
+      summary: Save a completed post to the database
       operationId: createPost
       tags:
         - Posts
@@ -32,7 +32,7 @@ paths:
                 $ref: "#/components/schemas/UnsuccessfulResponse"  
   /api/updatePost:
       patch:
-        summary: Save a completed post to the databse
+        summary: Save a completed post to the database
         operationId: updatePost
         tags:
           - Posts
@@ -57,7 +57,7 @@ paths:
                   $ref: "#/components/schemas/UnsuccessfulResponse"                    
   /api/getPosts/{user_id}:
     get:
-      summary: Save a completed post to the databse
+      summary: Get a users posts from the database
       operationId: getPosts
       tags:
         - Posts
@@ -82,7 +82,68 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnsuccessfulResponse"                            
-
+  /api/getUser:
+    get:
+      summary: Queries a users Profile from the database
+      operationId: getUser
+      parameters:
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Db-Token
+          in: header
+          required: true
+          schema:
+            type: string  
+      tags:
+        - Users
+      responses:   
+        '200':
+          description:  Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"   
+  /api/CreateAccount:
+    post:
+      summary: Create a new Account
+      operationId: CreateUser
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:  
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:   
+        '200':
+          description:  Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAccountResponse"         
+  /api/EditUser:
+    post:
+      summary: Edit a user
+      operationId: EditUser
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:  
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:   
+        '200':
+          description:  Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAccountResponse"      
 components:
   schemas:
     PostObject:
@@ -119,13 +180,6 @@ components:
         seatsAvailable:
           type: number
           format: float   
-    GetRequest:
-      type: object
-      required:
-        - user_id
-      properties:
-        post_id:
-          type: string  
     PostList:
       type: object
       properties:
@@ -148,3 +202,38 @@ components:
         error:
           type: string      
           default: "Incomplete post data" 
+    User:
+      type: object
+      required:
+        - email
+        - password
+        - name
+        - bio
+        - phone
+        - photo
+      properties:
+        email:
+          type: string      
+          example: "test@email.com" 
+        password:
+          type: string      
+          example: "testPassword"     
+        name:
+          type: string      
+          example: "testName"     
+        bio:
+          type: string      
+          example: "testBio"            
+        phone:
+          type: string      
+          example: "4312245323"          
+        photo:
+          type: string      
+          example: "testPhotoUrl"   
+    CreateAccountResponse:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: string                     
