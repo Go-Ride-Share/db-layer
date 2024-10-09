@@ -61,20 +61,23 @@ namespace GoRideShare
                 string postId = Guid.NewGuid().ToString();
 
                 // Use a parameterized query to insert the post details
-                var query = "INSERT INTO posts (post_id, poster_id, origin_lat, origin_lng, destination_lat, destination_lng, description, seats_available) " +
-                            "VALUES (@Post_id, @Poster_id, @Origin_lat, @Origin_lng, @Destination_lat, @Destination_lng, @Description, @Seats_available)";
+                var query = "INSERT INTO posts (post_id, poster_id, name, origin_lat, origin_lng, destination_lat, destination_lng, description, seats_available, departure_date, price) " +
+                            "VALUES (@Post_id, @Poster_id, @Name, @Origin_lat, @Origin_lng, @Destination_lat, @Destination_lng, @Description, @Seats_available, @Departure_date,@Price)";
 
                  // Use parameterized query to prevent SQL injection
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@Post_id",         postId);
                     command.Parameters.AddWithValue("@Poster_id",       newPost.PosterId);
+                    command.Parameters.AddWithValue("@Name",            newPost.Name);
                     command.Parameters.AddWithValue("@Origin_lat",      newPost.OriginLat);
                     command.Parameters.AddWithValue("@Origin_lng",      newPost.OriginLng);
                     command.Parameters.AddWithValue("@Destination_lat", newPost.DestinationLat);
                     command.Parameters.AddWithValue("@Destination_lng", newPost.DestinationLng);
                     command.Parameters.AddWithValue("@Description",     newPost.Description);
                     command.Parameters.AddWithValue("@Seats_available", newPost.SeatsAvailable);
+                    command.Parameters.AddWithValue("@Departure_date",  newPost.DepartureDate);
+                    command.Parameters.AddWithValue("@Price",           newPost.Price);
 
                     try
                     {
