@@ -9,7 +9,14 @@ Request paylaod template:
     name: string, ex "testName",
     bio: string, ex "testBio",
     phone: string, ex "4312245323",
-    photo: string, ex "testPhotoUrl"
+    photo: string, ex "photo_encoding"
+}
+```
+
+Response payload template:
+```
+{
+    user_id: string, ex "new_user_guid"
 }
 ```
 
@@ -19,6 +26,113 @@ Request paylaod template:
 {
     email: string, ex "test@email.com",
     password: string, ex "testPassword"
+}
+```
+
+Response payload template:
+```
+{
+    user_id: string, ex "new_user_guid",
+    photo: string, ex "photo_encoding"
+}
+```
+
+### /GetUser
+Request Header template:
+```
+{
+    X-User-ID: string, ex "user_guid_to_get_user",
+}
+```
+
+Response payload template:
+```
+{
+    email: string, ex "test@email.com",
+    name: string, ex "testName",
+    bio: string, ex "testBio",
+    phone: string, ex "4312245323",
+    photo: string, ex "photo_encoding"
+}
+```
+
+### /EditUser
+Request Header template:
+```
+{
+    X-User-ID: string, ex "user_guid_to_get_user",
+}
+```
+
+Request paylaod template:
+```
+{
+    // Note - pass null for the fields you don't wanna edit
+    email: string, ex "test@email.com" or null,
+    name: string, ex "testName" or null,
+    bio: string, ex "testBio" or null,
+    phone: string, ex "4312245323" or null,
+    photo: string, ex "photo_encoding" or null
+}
+```
+
+### /CreatePost
+Request Header template:
+```
+{
+    X-User-ID: string, ex "user_guid_to_get_user",
+}
+```
+
+Request paylaod template:
+```
+{
+    "name": "namename",
+    "posterId": "user_guid",
+    "description": "This is a dummy ride-share post.",
+    "departureDate": "2024-10-09",
+    "originLat": 40.712776,
+    "originLng": -74.005974,
+    "destinationLat": 34.052235,
+    "destinationLng": -118.24368,
+    "price": 25.00,
+    "seatsAvailable": 2
+}
+```
+
+Response payload template:
+```
+{
+    postId: string, ex "new_post_guid",
+}
+```
+
+### /GetPost
+Request Header template:
+```
+{
+    X-User-ID: string, ex "user_guid",
+}
+```
+
+Request Query parameter template:
+```
+/GetPost?userId={user_guid}
+```
+
+Response paylaod template:
+```
+{
+    "name": "namename",
+    "posterId": "user_guid",
+    "description": "This is a dummy ride-share post.",
+    "departureDate": "2024-10-09",
+    "originLat": 40.712776,
+    "originLng": -74.005974,
+    "destinationLat": 34.052235,
+    "destinationLng": -118.24368,
+    "price": 25.00,
+    "seatsAvailable": 2
 }
 ```
 
