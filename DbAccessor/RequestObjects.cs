@@ -1,29 +1,35 @@
 using System.Configuration;
+using System.Text.Json.Serialization;
 
 namespace GoRideShare
 {
     public class LoginCredentials(string email, string passwordHash)
     {
+        [JsonPropertyName("email")]
         public string Email { get; set; } = email;
+        [JsonPropertyName("password")]
         public string PasswordHash { get; set; } = passwordHash;
     }
 
-    public class UserRegistrationInfo(
-        string email, 
-        string passwordHash, 
-        string name,
-        string bio, 
-        string phoneNumber, 
-        string photo)
-
+    public class UserRegistrationInfo
     {
-        public string Email { get; set; } = email;
-        public string PasswordHash { get; set; } = passwordHash;
-        public string Name { get; set; } = name;
-        public string Bio { get; set; } = bio;
-        public string Preferences { get; set; } = preferences;
-        public string PhoneNumber { get; set; } = phoneNumber;
-        public string Photo { get; set; } = photo;
+        [JsonPropertyName("email")]
+        public string? Email { get; set; }
+
+        [JsonPropertyName("password")]
+        public string? PasswordHash { get; set; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("bio")]
+        public string? Bio { get; set; }
+
+        [JsonPropertyName("phone")]
+        public string? PhoneNumber { get; set; }
+
+        [JsonPropertyName("photo")]
+        public string? Photo { get; set; }
     }
 
     public class PostDetails

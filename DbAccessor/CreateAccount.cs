@@ -3,17 +3,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using MySql.Data.MySqlClient;
 
 namespace GoRideShare
 {
+    // This class handles creating a new user account
     public class CreateAccount(ILogger<CreateAccount> logger)
     {
         private readonly ILogger<CreateAccount> _logger = logger;
 
-
         // Returns UserId if registration is successful, error otherwise.
         [Function("CreateUser")]
-        public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
             // Read the request body to get the user's registration information
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -85,7 +86,6 @@ namespace GoRideShare
                     }
                 }
             }
-
         }
     }
 }
