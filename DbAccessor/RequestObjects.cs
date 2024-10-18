@@ -149,18 +149,17 @@ namespace GoRideShare
         [JsonPropertyName("postId")]
         public string PostId { get; set; }
 
-        // public Conversation
-        // (
-        //     string[] userIDs,
-        //     List<Message> messages,
-        //     string postId
-        // )
-        // {
-        //     userID = userID;
-        //     ConversationId = conversationId;
-        //     Messages = messages;
-        //     PostId = postId;
-        // }
+        public Conversation
+        (
+            string[] userIDs,
+            List<Message> messages,
+            string postId
+        )
+        {
+            userID = userID;
+            Messages = messages;
+            PostId = postId;
+        }
     }
 
     public class Message
