@@ -1,5 +1,7 @@
 using System.Configuration;
 using System.Text.Json.Serialization;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
 
 namespace GoRideShare
 {
@@ -95,4 +97,126 @@ namespace GoRideShare
             DepartureDate = departureDate;
         }
     }
+
+    public class IncomingConversationRequest
+    {
+        [JsonRequired]
+        [JsonPropertyName("userId")]
+        public string UserId  { get; set; }
+        
+        [JsonRequired]
+        [JsonPropertyName("contents")]
+        public string Contents { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("timeStamp")]
+        public System.DateTime TimeStamp { get; set; }
+
+        public (bool, string) validate()
+        {
+            if ( Contents == "")
+            {
+                return (true, "contents cannot be empty");
+            }
+            if ( UserId == "")
+            {
+                return (true, "userId is invalid");
+            }
+            if (TimeStamp == DateTime.MinValue || TimeStamp > DateTime.Now) // Check if the timestamp is in the future or invalid
+            {
+                return (true, "timeStamp is invalid");
+            }
+            return (false, "");
+        }
+    }
+
+
+        public class Conversation
+    {
+        [JsonRequired]
+        [JsonPropertyName("conversationId")]
+        public string ConversationId { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("messages")]
+        public List<Message> Messages { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("userID")]
+        public string userID { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("postId")]
+        public string PostId { get; set; }
+
+        // public Conversation
+        // (
+        //     string[] userIDs,
+        //     List<Message> messages,
+        //     string postId
+        // )
+        // {
+        //     userID = userID;
+        //     ConversationId = conversationId;
+        //     Messages = messages;
+        //     PostId = postId;
+        // }
+    }
+
+    public class Message
+    {
+        [JsonRequired]
+        [JsonPropertyName("timeStamp")]
+        public DateTime TimeStamp  { get; set; }
+        
+        [JsonRequired]
+        [JsonPropertyName("senderId")]
+        public string SenderId { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("contents")]
+        public string Contents { get; set; }
+
+        public Message
+        (
+            DateTime timeStamp,
+            string senderId,
+            string contents
+        )
+        {
+            TimeStamp = timeStamp;
+            SenderId = senderId;
+            Contents = contents;
+        }
+    }
+
+    [BsonIgnoreExtraElements]
+    public class Movie
+    {
+
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
+
+        [BsonElement("title")]
+        [JsonRequired]
+        [JsonPropertyName("title")]
+        public string Title { get; set; } = null!;
+
+        [BsonElement("plot")]
+        [JsonRequired]
+        [JsonPropertyName("plot")]
+        public string Plot { get; set; } = null!;
+
+        public Movie
+        (
+            string title,
+            string plot
+        )
+        {
+            Title = title;
+            Plot = plot;
+        }
+    }
+
 }
