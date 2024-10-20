@@ -98,6 +98,47 @@ namespace GoRideShare
         }
     }
 
+    public class IncomingMessageRequest
+    {
+
+        [JsonRequired]
+        [JsonPropertyName("conversationID")]
+        public string ConversationId { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("userId")]
+        public string UserId { get; set; }
+        
+        [JsonRequired]
+        [JsonPropertyName("contents")]
+        public string Contents { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("timeStamp")]
+        public System.DateTime TimeStamp { get; set; }
+
+        public (bool, string) validate()
+        {
+            if(ConversationId == "")
+            {
+                return (true, "conversationId is invalid");
+            }
+            if (Contents == "")
+            {
+                return (true, "contents cannot be empty");
+            }
+            if (UserId == "")
+            {
+                return (true, "userId is invalid");
+            }
+            if (TimeStamp == DateTime.MinValue || TimeStamp > DateTime.Now) // Check if the timestamp is in the future or invalid
+            {
+                return (true, "timeStamp is invalid");
+            }
+            return (false, "");
+        }
+    }
+
     public class IncomingConversationRequest
     {
         [JsonRequired]
