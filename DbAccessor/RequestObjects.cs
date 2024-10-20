@@ -130,48 +130,48 @@ namespace GoRideShare
         }
     }
 
-
-        public class Conversation
+    [BsonIgnoreExtraElements]
+    public class Conversation
     {
-        [JsonRequired]
-        [JsonPropertyName("conversationId")]
-        public string ConversationId { get; set; }
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? ConversationId { get; set; }
 
+        [BsonElement("users")]
+        [JsonRequired]
+        [JsonPropertyName("users")]
+        public List<string> Users { get; set; } = null!;
+
+        [BsonElement("messages")]
         [JsonRequired]
         [JsonPropertyName("messages")]
-        public List<Message> Messages { get; set; }
-
-        [JsonRequired]
-        [JsonPropertyName("userID")]
-        public string userID { get; set; }
-
-        [JsonRequired]
-        [JsonPropertyName("postId")]
-        public string PostId { get; set; }
+        public List<Message> Messages { get; set; } = null!;
 
         public Conversation
         (
-            string[] userIDs,
-            List<Message> messages,
-            string postId
+            List<String> users,
+            List<Message> messages
         )
         {
-            userID = userID;
+            Users = users;
             Messages = messages;
-            PostId = postId;
         }
     }
 
     public class Message
-    {
+    {   
+
+        [BsonElement("timeStamp")]
         [JsonRequired]
         [JsonPropertyName("timeStamp")]
         public DateTime TimeStamp  { get; set; }
         
+        [BsonElement("senderID")]
         [JsonRequired]
         [JsonPropertyName("senderId")]
         public string SenderId { get; set; }
 
+        [BsonElement("contents")]
         [JsonRequired]
         [JsonPropertyName("contents")]
         public string Contents { get; set; }

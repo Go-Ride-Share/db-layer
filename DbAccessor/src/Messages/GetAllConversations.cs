@@ -8,7 +8,6 @@ using Microsoft.Azure.Functions.Worker;
 
 namespace GoRideShare
 {
-
     public class GetAllConversations(ILogger<GetAllConversations> logger)
     {
 
@@ -39,11 +38,12 @@ namespace GoRideShare
             IMongoCollection<Conversation> myConversations = client.GetDatabase("user_chats").GetCollection<Conversation>("conversation");
 
 
-            // Get all conversations where the user is a participant
-            var conversations = myConversations.Find(c => c.user.Contains(user)).ToList();
+            // Get all conversations where the user string is included in the list of userIDs
+            var filter = Builders<Conversation>.Filter.AnyEq(conversation => conversation.Users, myUserID);
+            var conversations = await myConversations.Find(filter).ToListAsync();
 
             // Gotta return the conversation with object id etc eventually
-            return new OkObjectResult(newConversation);
+            return new OkObjectResult(conversations);
         }
 
     }
