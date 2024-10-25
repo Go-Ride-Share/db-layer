@@ -1,0 +1,127 @@
+using MongoDB.Bson;
+using MongoDB.Driver;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+
+namespace MongoExample
+{
+    public class PollMovies
+    {
+        private MongoClient _client;
+        private IMongoDatabase _database;
+        private IMongoCollection<BsonDocument> _moviesCollection;
+
+        public PollMovies(string connectionString, string dbName)
+        {
+            try
+            {
+                _client = new MongoClient(connectionString);
+                _database = _client.GetDatabase(dbName);
+                _moviesCollection = _database.GetCollection<BsonDocument>("movies");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error connecting to MongoDB: " + ex.Message);
+                throw;
+            }
+        }
+
+        public string PollMoviesByAuthor(string author)
+        {
+            try
+            {
+                var builder = Builders<BsonDocument>.Filter;
+                var filter = builder.Eq("author", author);
+                var moviesList = _moviesCollection.Find(filter).ToList();
+                
+                if (moviesList == null || moviesList.Count == 0)
+                {
+                    Console.WriteLine("No movies found for author: " + author);
+                    return "[]";
+                }
+
+                List<string> movieStreamingList = new List<string>();
+
+                foreach (var movie in moviesList)
+                {
+                    string movieId = movie.GetValue("_id").ToString();
+                    var title = movie.GetValue("title").AsString;
+                    
+                    List<string> platforms = GetPlatformsByMovie(movieId);
+                    if (platforms.Count > 0)
+                    {
+                        string movieJson = GenerateMoviePlatformJson(movieId, title, platforms);
+                        movieStreamingList.Add(movieJson);
+                    }
+                }
+
+                return "[" + string.Join(",", movieStreamingList) + "]";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error polling movies: " + ex.Message);
+                return "[]";
+            }
+        }
+
+        private List<string> GetPlatformsByMovie(string movieId)
+        {
+            try
+            {
+                var platformsList = new List<string>();
+                
+                var streamingPlatforms = new[]
+                {
+                    new { Name = "Netflix", Country = "USA", Link = "https://netflix.com" },
+                    new { Name = "Hulu", Country = "USA", Link = "https://hulu.com" },
+                    new { Name = "Amazon Prime", Country = "Global", Link = "https://primevideo.com" },
+                    new { Name = "Disney+", Country = "Global", Link = "https://disneyplus.com" },
+                    new { Name = "Apple TV+", Country = "Global", Link = "https://tv.apple.com" }
+                };
+
+                Random random = new Random();
+                foreach (var platform in streamingPlatforms)
+                {
+                    if (random.Next(0, 2) == 1)
+                    {
+                        platformsList.Add(JsonSerializer.Serialize(platform));
+                    }
+                }
+
+                return platformsList;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error retrieving platforms: " + ex.Message);
+                return new List<string>();
+            }
+        }
+
+        private string GenerateMoviePlatformJson(string movieId, string title, List<string> platforms)
+        {
+            string platformArray = "[" + string.Join(",", platforms) + "]";
+            return $"{{ \"movieId\": \"{movieId}\", \"title\": \"{title}\", \"platforms\": {platformArray} }}";
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.Write("Enter MongoDB connection string: ");
+            string connectionString = Console.ReadLine();
+            Console.Write("Enter database name: ");
+            string dbName = Console.ReadLine();
+
+            PollMovies pollMovies = new PollMovies(connectionString, dbName);
+
+            Console.Write("Enter author: ");
+            string author = Console.ReadLine();
+            string moviesJson = pollMovies.PollMoviesByAuthor(author);
+            Console.WriteLine("Movies for author " + author + ":");
+            Console.WriteLine(moviesJson);
+        }
+    }
+}
