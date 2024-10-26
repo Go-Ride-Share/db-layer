@@ -139,7 +139,7 @@ namespace GoRideShare
         }
     }
 
-    public class IncomingConversationRequest
+    public class CreateConversationRequest
     {
         [JsonRequired]
         [JsonPropertyName("userId")]
@@ -219,9 +219,9 @@ namespace GoRideShare
 
         public Message
         (
-            DateTime timeStamp,
             string senderId,
-            string contents
+            string contents,
+            DateTime timeStamp
         )
         {
             TimeStamp = timeStamp;

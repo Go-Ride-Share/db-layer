@@ -35,10 +35,11 @@ namespace GoRideShare
 
             // Read the request body to get the user's registration information
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            IncomingConversationRequest? convoRequest = null;
+            CreateConversationRequest? convoRequest;
             try
             {
-                convoRequest = JsonSerializer.Deserialize<IncomingConversationRequest>(requestBody);
+                convoRequest = JsonSerializer.Deserialize<CreateConversationRequest>(requestBody);
+
                 var (invalid, errorMessage) = convoRequest.validate();
                 if (invalid)
                 {
@@ -53,41 +54,39 @@ namespace GoRideShare
             _logger.LogInformation($"Raw Request Body: {JsonSerializer.Serialize(requestBody)}");
 
 
-            // serialize the messages first
-            Message? newMessage = null;
-            try
-            {
-                newMessage = JsonSerializer.Deserialize<Message>(convoRequest.Contents);
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogError($"JSON deserialization failed: {ex.Message}");
-                return new BadRequestObjectResult("Invalid format or Incomplete Message data.");
-            }
+            
+            Message newMessage = new Message
+            (
+                convoRequest.UserId, 
+                convoRequest.Contents, 
+                convoRequest.TimeStamp
+            );
             
             // Creates a new Document for the conversation
-            BsonDocument newConversation = new BsonDocument
-            {
-                { "users", new BsonArray { convoRequest.UserId, new BsonString(req.Headers["X-User-Id"].ToString()) } },
-                { "messages", new BsonArray { new BsonDocument
-                    {
-                        { "senderId", newMessage.SenderId },
-                        { "content", newMessage.Contents },
-                        { "timestamp", newMessage.TimeStamp }
-                    }
-                }}
-            };
 
+            var newConversation = new Conversation
+            (
+                new List<string> 
+                {
+                    convoRequest.UserId,
+                    userId
+                }, 
+                new List<Message> { newMessage }
+            );
 
             // Get the database collection and insert the new conversation
-            IMongoCollection<BsonDocument> convoCollection = client.GetDatabase("user_chats").GetCollection<BsonDocument>("conversation");
+            IMongoCollection<Conversation> convoCollection = client.GetDatabase("user_chats").GetCollection<Conversation>("conversations");
 
-
-            // Insert the new conversation
-            await convoCollection.InsertOneAsync(newConversation);
-
-            // Gotta return the conversation with object id etc eventually
-            return new OkObjectResult(newConversation);
+            try
+            {
+                await convoCollection.InsertOneAsync(newConversation);
+                var insertedId = newConversation.ConversationId;
+                return new OkObjectResult($"Document inserted successfully with ID: {insertedId}");
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult($"Failed to insert document: {ex.Message}") { StatusCode = StatusCodes.Status500InternalServerError };
+            }
         }
 
     }
