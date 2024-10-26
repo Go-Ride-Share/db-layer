@@ -20,54 +20,32 @@ namespace MongoExample
         }
 
         [Function("GetMovies")]
-        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req) {
+            IMongoCollection<Conversation> moviesCollection = client.GetDatabase("user_chats").GetCollection<Conversation>("conversations");
 
-            string limit = req.Query["limit"];
-            IMongoCollection<Movie> moviesCollection = client.GetDatabase("sample_mflix").GetCollection<Movie>("movies");
-
-            string searchItem = req.Query["searchItem"];
-            var filter = Builders<Movie>.Filter.And(
-                Builders<Movie>.Filter.Gt("year", 2005),
-                Builders<Movie>.Filter.Lt("year", 2010),
-                Builders<Movie>.Filter.Text(searchItem)
+            var document = new Conversation
+            (
+                new List<string> 
+                {
+                    "user1",
+                    "user2"
+                }, 
+                new List<Message> { new Message("user1", "Hello again with proper timestamp once again!",  BsonTimestamp.Create(DateTimeOffset.Now.ToUnixTimeSeconds())) }
             );
 
-            var update = Builders<Movie>.Update.Set("streamingPlatforms", new BsonArray
+
+            try
             {
-                new BsonDocument
-                {
-                    { "name", "Netflix" },
-                    { "url", "https://www.netflix.com" },
-                    { "subscriptionRequired", true }
-                },
-                new BsonDocument
-                {
-                    { "name", "Amazon Prime" },
-                    { "url", "https://www.primevideo.com" },
-                    { "subscriptionRequired", true }
-                },
-                new BsonDocument
-                {
-                    { "name", "Hulu" },
-                    { "url", "https://www.hulu.com" },
-                    { "subscriptionRequired", true }
-                }
-            });
-
-            await moviesCollection.UpdateManyAsync(filter, update);
-
-            var moviesToFind = moviesCollection.Find(filter);
-
-            if(limit != null && Int32.Parse(limit) > 0) {
-                moviesToFind.Limit(Int32.Parse(limit));
+                await moviesCollection.InsertOneAsync(document);
+                var insertedId = document.ConversationId;
+                return new OkObjectResult($"Document inserted successfully with ID: {insertedId}");
+                return new OkObjectResult("Document inserted successfully.");
             }
-
-            List<Movie> movies = moviesToFind.ToList();
-
-            return new OkObjectResult(movies);
-
+            catch (Exception ex)
+            {
+                return new ObjectResult($"Failed to insert document: {ex.Message}") { StatusCode = StatusCodes.Status500InternalServerError };
+            }
         }
-
     }
 
 }

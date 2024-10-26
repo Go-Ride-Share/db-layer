@@ -34,4 +34,61 @@ namespace MongoExample
         }
     }
 
+    [BsonIgnoreExtraElements]
+    public class Conversation
+    {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? ConversationId { get; set; }
+
+        [BsonElement("users")]
+        [JsonRequired]
+        [JsonPropertyName("users")]
+        public List<string> Users { get; set; } = null!;
+
+        [BsonElement("messages")]
+        [JsonRequired]
+        [JsonPropertyName("messages")]
+        public List<Message> Messages { get; set; } = null!;
+
+        public Conversation
+        (
+            List<String> users,
+            List<Message> messages
+        )
+        {
+            Users = users;
+            Messages = messages;
+        }
+    }
+
+    [BsonIgnoreExtraElements]
+    public class Message
+    {
+        [BsonElement("senderId")]
+        [JsonRequired]
+        [JsonPropertyName("senderId")]
+        public string SenderId { get; set; } = null!;
+
+        [BsonElement("contents")]
+        [JsonRequired]
+        [JsonPropertyName("contents")]
+        public string Contents { get; set; } = null!;
+
+        [BsonElement("timeStamp")]
+        [JsonRequired]
+        [JsonPropertyName("timeStamp")]
+        public BsonTimestamp TimeStamp { get; set; }
+        public Message
+        (
+            string sender,
+            string contents,
+            BsonTimestamp timeStamp
+        )
+        {
+            SenderId = sender;
+            Contents = contents;
+            TimeStamp = timeStamp;
+        }
+    }
 }
