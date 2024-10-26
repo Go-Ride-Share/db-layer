@@ -53,8 +53,6 @@ namespace GoRideShare
             }
             _logger.LogInformation($"Raw Request Body: {JsonSerializer.Serialize(requestBody)}");
 
-
-            
             Message newMessage = new Message
             (
                 convoRequest.UserId, 
@@ -63,7 +61,6 @@ namespace GoRideShare
             );
             
             // Creates a new Document for the conversation
-
             var newConversation = new Conversation
             (
                 new List<string> 
