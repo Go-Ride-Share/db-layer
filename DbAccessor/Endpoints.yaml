@@ -144,6 +144,159 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CreateAccountResponse"      
+  /api/CreateConversation:
+    post:
+      summary: Create a new conversation between 2 users
+      operationId: CreateConversation
+      tags:
+        - Messages
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResponse'
+        '400':
+          description: Unsuccessful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnsuccessfulResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorResponse'
+  /api/GetAllConversations:
+    get:
+      summary: Retrieve a snapshot of conversations for the user specified by "X-User-ID" in the headers. Each conversation will include only the latest message.     
+      operationId: GetAllConversations
+      tags:
+        - Messages
+      parameters:
+        - name: X-User-ID
+          in: header
+          description: The ID of the user whose messages you want to query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageObject'
+        '400':
+          description: Unsuccessful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnsuccessfulResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorResponse'
+  /api/PollConversation/{conversationId}:
+    get:
+      summary: Retrieve limited number of messages for a given conversation ID
+      operationId: PollConversation
+      tags:
+        - Messages
+      parameters:
+        - name: conversationId
+          in: path
+          description: The ID of the conversation you want to query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: The maximum number of messages to retrieve. Default is 50 if not specified.
+          required: false
+          schema:
+            type: integer
+        - name: timeStamp
+          in: query
+          description: Only messages after this timestamp will be retrieved. Can be used together with limit to retrieve limited messages in a specific time range.
+          required: false
+          schema:
+            type: integer
+        - name: X-User-ID
+          in: header
+          description: The ID of the user whose messages you want to query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageObject'
+        '400':
+          description: Unsuccessful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnsuccessfulResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorResponse'
+  /api/PostMessage:
+    post:
+      summary: Post a message to a conversation
+      operationId: PostMessage
+      tags:
+        - Messages
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostMessageRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: The ID of the Conversation in which Message was added
+                    type: string
+                    example: "cccccccc-ccccc-cccc"
+        '400':
+          description: Unsuccessful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnsuccessfulResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorResponse'
 components:
   schemas:
     PostObject:
@@ -237,3 +390,65 @@ components:
       properties:
         user_id:
           type: string                     
+    ConversationRequest:
+      type: object
+      required:
+        - userId
+        - contents
+        - timeStamp
+      properties:
+        userId:
+          type: string
+          example: "aaaaaaaa-aaaaa-aaaa"
+        contents:
+          type: string
+          example: "Hello, is this ride available?"
+        timeStamp:
+          type: string
+          example: "2021-03-01T00:00:00Z"  
+    ConversationResponse:
+      type: object
+      required:
+        - conversationId
+        - user
+        - messages
+      properties:
+        conversation_id:
+          type: string
+          example: "cccccccc-ccccc-cccc" 
+        user:
+          type: object
+          properties:
+            userId:
+              type: string
+              example: "aaaaaaaa-aaaaa-aaaa"
+            name:
+              type: string
+              example: "John Smith"
+            photo:
+              type: string
+              example: "www.photourl.com"
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageObject'
+    PostMessageRequest:
+      type: object
+      required:
+        - conversationId
+        - userId
+        - contents
+        - timeStamp
+      properties:
+        conversationId:
+          type: string
+          example: "cccccccc-ccccc-cccc"
+        userId:
+          type: string
+          example: "aaaaaaaa-aaaaa-aaaa"
+        contents:
+          type: string
+          example: "Hello, is this ride available?"
+        timeStamp:
+          type: string
+          example: "2021-03-01T00:00:00Z"
