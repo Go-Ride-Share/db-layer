@@ -11,7 +11,7 @@ namespace GoRideShare
     public class GetAllConversations
     {
 
-        private readonly string? _baseApiUrl;
+        private readonly string? _dbApiUrl;
         private readonly ILogger<GetAllConversations> _logger;
         // initialize the MongoDB client lazily. This is a best practice for serverless functions because it is not efficient to establish Mongo connections on every execution of our Azure Function
         public static Lazy<MongoClient> lazyClient = new Lazy<MongoClient>(InitializeMongoClient);
@@ -25,7 +25,7 @@ namespace GoRideShare
         public GetAllConversations(ILogger<GetAllConversations> logger)
         {
             _logger = logger;
-            _baseApiUrl = Environment.GetEnvironmentVariable("BASE_API_URL");
+            _dbApiUrl = Environment.GetEnvironmentVariable("DB_URL");
         }
 
         [Function("GetAllConversations")]
@@ -41,7 +41,7 @@ namespace GoRideShare
 
             // Get the user name and photo details by calling SQL Get user endpoint
             User otherUser;
-            string endpoint = $"{_baseApiUrl}/api/GetUser";
+            string endpoint = $"{_dbApiUrl}/api/GetUser";
 
             // make http request using req.Headers and endpoint to get the user details
             var (error, response) = await Utilities.MakeHttpGetRequest(userId, endpoint);
@@ -50,7 +50,7 @@ namespace GoRideShare
                 otherUser = JsonSerializer.Deserialize<User>(response);
                 otherUser.UserId = userId;
             }else{
-                return new ObjectResult("Failed to get user details from DB") { StatusCode = StatusCodes.Status500InternalServerError };
+                return new ObjectResult("Failed to get user details from DB") { StatusCode = StatusCodes.Status404NotFound };
             }
 
 

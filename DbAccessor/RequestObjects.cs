@@ -202,7 +202,7 @@ namespace GoRideShare
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? ConversationId { get; set; }
+        public string ConversationId { get; set; }
 
         [BsonElement("users")]
         [JsonRequired]

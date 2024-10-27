@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace GoRideShare
 {
@@ -20,32 +21,23 @@ namespace GoRideShare
             return null; // All headers are valid
         }
 
-        internal static async Task<(bool error, Stream response)> MakeHttpGetRequest(string xUserId, string endpoint)
+        internal static async Task<(bool error, string response)> MakeHttpGetRequest(string xUserId, string endpoint)
         {
             // Create a new HttpClient instance
             using (var client = new HttpClient())
             {
-                // Create a new HttpRequestMessage instance
-                using (var request = new HttpRequestMessage(HttpMethod.Get, endpoint))
-                {
-                    // Add the X-User-ID header to the request
-                    request.Headers.Add("X-User-ID", xUserId);
+            // Create a new HttpRequestMessage instance
+            using (var request = new HttpRequestMessage(HttpMethod.Get, endpoint))
+            {
+                // Add the X-User-ID header to the request
+                request.Headers.Add("X-User-ID", xUserId);
 
-                    // Send the request and get the response
-                    var response = await client.SendAsync(request);
+                // Send the request and get the response
+                var response = await client.SendAsync(request);
 
-                    // Check if the response is successful
-                    if (response.IsSuccessStatusCode)
-                    {
-                        // Return the response stream
-                        return (false, await response.Content.ReadAsStreamAsync());
-                    }
-                    else
-                    {
-                        // Return an error message
-                        return (true, null);
-                    }
-                }
+                // if its successful, then we know its 200, otherwise 404
+                return (response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+            }
             }
         }
     }

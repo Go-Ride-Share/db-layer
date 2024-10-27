@@ -12,7 +12,7 @@ namespace GoRideShare
     public class CreateConversation
     {
         private readonly ILogger<CreateConversation> _logger;
-        private readonly string? _baseApiUrl;
+        private readonly string? _dbApiUrl;
         // initialize the MongoDB client lazily. This is a best practice for serverless functions because it is not efficient to establish Mongo connections on every execution of our Azure Function
         public static Lazy<MongoClient> lazyClient = new Lazy<MongoClient>(InitializeMongoClient);
         public static MongoClient client = lazyClient.Value;
@@ -25,7 +25,7 @@ namespace GoRideShare
         public CreateConversation(ILogger<CreateConversation> logger)
         {
             _logger = logger;
-            _baseApiUrl = Environment.GetEnvironmentVariable("BASE_API_URL");
+            _dbApiUrl = Environment.GetEnvironmentVariable("DB_URL");
         }
         
         [Function("CreateConversation")]
@@ -61,16 +61,18 @@ namespace GoRideShare
 
             // Get the user name and photo details by calling SQL Get user endpoint
             User otherUser;
-            string endpoint = $"{_baseApiUrl}/api/GetUser";
+            string endpoint = $"{_dbApiUrl}/api/GetUser";
 
             // make http request using req.Headers and endpoint to get the user details
             var (error, response) = await Utilities.MakeHttpGetRequest(convoRequest.UserId, endpoint);
             if (!error && response != null)
             {
+                _logger.LogInformation("Response: " + response);
                 otherUser = JsonSerializer.Deserialize<User>(response);
                 otherUser.UserId = convoRequest.UserId;
             }else{
-                return new ObjectResult("Failed to get user details from DB") { StatusCode = StatusCodes.Status500InternalServerError };
+                _logger.LogError("Error" + response);
+                return new ObjectResult($"Failed to get user details from DB: {response}") { StatusCode = StatusCodes.Status404NotFound };
             }
 
             Message newMessage = new Message
@@ -91,14 +93,6 @@ namespace GoRideShare
                 new List<Message> { newMessage }
             );
 
-            // Response object includes User details, hence its seperate from the conversation object
-            var responseObj = new ConversationResponse
-            (
-                newConversation.ConversationId, 
-                otherUser, 
-                new List<Message> {newMessage} 
-            );
-
             // Get the database collection and insert the new conversation
             IMongoCollection<Conversation> convoCollection = client.GetDatabase("user_chats").GetCollection<Conversation>("conversations");
 
@@ -106,6 +100,14 @@ namespace GoRideShare
             {
                 await convoCollection.InsertOneAsync(newConversation);
                 
+                            // Response object includes User details, hence its seperate from the conversation object
+                var responseObj = new ConversationResponse
+                (
+                    newConversation.ConversationId, 
+                    otherUser, 
+                    new List<Message> {newMessage} 
+                );
+
                 return new OkObjectResult(responseObj);
             }
             catch (Exception ex)
