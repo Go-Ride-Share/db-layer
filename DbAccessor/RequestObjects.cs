@@ -98,11 +98,10 @@ namespace GoRideShare
         }
     }
 
-    public class IncomingMessageRequest
+    public class PostMessageRequest
     {
-
         [JsonRequired]
-        [JsonPropertyName("conversationID")]
+        [JsonPropertyName("conversationId")]
         public required string ConversationId { get; set; }
 
         [JsonRequired]
@@ -115,7 +114,7 @@ namespace GoRideShare
 
         [JsonRequired]
         [JsonPropertyName("timeStamp")]
-        public System.DateTime TimeStamp { get; set; }
+        public DateTime TimeStamp { get; set; }
 
         public (bool, string) validate()
         {
