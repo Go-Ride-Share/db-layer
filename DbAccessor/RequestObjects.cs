@@ -200,14 +200,8 @@ namespace GoRideShare
     }
 
     public class Message
-    {   
-
-        [BsonElement("timeStamp")]
-        [JsonRequired]
-        [JsonPropertyName("timeStamp")]
-        public DateTime TimeStamp  { get; set; }
-        
-        [BsonElement("senderID")]
+    {          
+        [BsonElement("senderId")]
         [JsonRequired]
         [JsonPropertyName("senderId")]
         public string SenderId { get; set; }
@@ -216,6 +210,11 @@ namespace GoRideShare
         [JsonRequired]
         [JsonPropertyName("contents")]
         public string Contents { get; set; }
+
+        [BsonElement("timeStamp")]
+        [JsonRequired]
+        [JsonPropertyName("timeStamp")]
+        public DateTime TimeStamp  { get; set; }
 
         public Message
         (

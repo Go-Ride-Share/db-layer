@@ -21,7 +21,6 @@ namespace GoRideShare
             return new MongoClient(Environment.GetEnvironmentVariable("MONGODB_ATLAS_URI"));
         }
 
-
         [Function("GetAllConversations")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
@@ -32,18 +31,25 @@ namespace GoRideShare
                 return validationResult;
             }
 
-            string myUserID = req.Headers["X-User-Id"].ToString();  
-
             // Get the database collection and insert the new conversation
-            IMongoCollection<Conversation> myConversations = client.GetDatabase("user_chats").GetCollection<Conversation>("conversation");
-
+            IMongoCollection<Conversation> myConversations = client.GetDatabase("user_chats").GetCollection<Conversation>("conversations");
 
             // Get all conversations where the user string is included in the list of userIDs
-            var filter = Builders<Conversation>.Filter.AnyEq(conversation => conversation.Users, myUserID);
-            var conversations = await myConversations.Find(filter).ToListAsync();
+            BsonDocument filter = new BsonDocument{
+                { "users", userId }
+            };
 
-            // Gotta return the conversation with object id etc eventually
-            return new OkObjectResult(conversations);
+            try
+            {
+                var conversationsToFind = await myConversations.FindAsync(filter);
+                List<Conversation> conversations = await conversationsToFind.ToListAsync();
+                return new OkObjectResult(conversations);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "A DB error occurred while retrieving conversations.");
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
         }
 
     }

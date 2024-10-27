@@ -11,7 +11,7 @@ namespace GoRideShare
             userId = string.Empty;
             
             // Check for X-User-ID  and X-DbToken headers
-            if (!headers.TryGetValue("X-User-ID", out var userIdValue))
+            if (!headers.TryGetValue("X-User-ID", out var userIdValue) || string.IsNullOrWhiteSpace(userIdValue))
             {
                 return new BadRequestObjectResult("Missing the following header: 'X-User-ID'.");
             }
