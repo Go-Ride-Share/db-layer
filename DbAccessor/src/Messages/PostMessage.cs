@@ -59,33 +59,26 @@ namespace GoRideShare
                 incomingRequest.TimeStamp
             );
 
-            _logger.LogInformation("conversationId: " + incomingRequest.ConversationId);
             // Get the database collection and insert the new conversation
             IMongoCollection<Conversation> myConversations = client.GetDatabase("user_chats").GetCollection<Conversation>("conversations");
 
-            // // Get all conversations where the user string is included in the list of userIDs
-            // BsonDocument filter = new BsonDocument{
-            //     { "_id", new ObjectId(incomingRequest.ConversationId) }
-            // };
-
             try
             {
-                // var conversationToFind = await myConversations.FindAsync(filter);
-                // Conversation conversation = await conversationToFind.FirstOrDefaultAsync();
-
                 // Push the new message to the existing Messages array in the same conversation on db
                 var filter = Builders<Conversation>.Filter.Eq("_id", new ObjectId(incomingRequest.ConversationId));
                 var update = Builders<Conversation>.Update.Push("messages", newMessage);
-                await myConversations.FindOneAndUpdateAsync(filter, update);
-                // Console.WriteLine("Update Result: " + updateResult);
-                // if (updateResult.ModifiedCount > 0)
-                // {
-                    return new OkObjectResult($"Message added successfully with ID: {incomingRequest.ConversationId}");
-                // }
-                // else
-                // {
-                //     return new ObjectResult("Message was not added.") { StatusCode = StatusCodes.Status500InternalServerError };
-                // }
+                
+                // return successful or unsuccessful response depending on teh result of the operation
+                var result = await myConversations.UpdateOneAsync(filter, update);
+                if (result.IsAcknowledged)
+                {
+                    return new OkObjectResult(new { Id = incomingRequest.ConversationId });
+                }
+                else
+                {
+                    return new BadRequestObjectResult("Failed to save message.");
+                }
+
             }
             catch (Exception ex)
             {

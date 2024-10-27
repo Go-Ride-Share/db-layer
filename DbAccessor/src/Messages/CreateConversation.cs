@@ -78,7 +78,7 @@ namespace GoRideShare
             {
                 await convoCollection.InsertOneAsync(newConversation);
                 var insertedId = newConversation.ConversationId;
-                return new OkObjectResult($"Document inserted successfully with ID: {insertedId}");
+                return new OkObjectResult(newConversation);
             }
             catch (Exception ex)
             {
