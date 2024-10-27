@@ -43,12 +43,17 @@ namespace GoRideShare
             {
                 var conversationsToFind = await myConversations.FindAsync(filter);
                 List<Conversation> conversations = await conversationsToFind.ToListAsync();
+                // keep only latest message of each conversation by checking its timestamp property
+                foreach (var convo in conversations)
+                {
+                    convo.Messages = convo.Messages.OrderByDescending(m => m.TimeStamp).Take(1).ToList();
+                }
                 return new OkObjectResult(conversations);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "A DB error occurred while retrieving conversations.");
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                return new ObjectResult("A DB error occurred while retrieving conversations") { StatusCode = StatusCodes.Status500InternalServerError };
             }
         }
 
