@@ -138,7 +138,7 @@ namespace GoRideShare
         }
     }
 
-    public class CreateConversationRequest
+    public class ConversationRequest
     {
         [JsonRequired]
         [JsonPropertyName("userId")]
@@ -167,6 +167,33 @@ namespace GoRideShare
                 return (true, "timeStamp is invalid");
             }
             return (false, "");
+        }
+    }
+
+    public class ConversationResponse
+    {
+        [JsonRequired]
+        [JsonPropertyName("conversationId")]
+        public string ConversationId  { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("user")]
+        public User User  { get; set; }
+        
+        [JsonRequired]
+        [JsonPropertyName("messages")]
+        public List<Message> Messages { get; set; }
+
+        public ConversationResponse
+        (
+            string conversationId, 
+            User user,
+            List<Message> messages
+        )
+        {
+            ConversationId = conversationId;
+            User = user;
+            Messages = messages;
         }
     }
 
@@ -225,6 +252,45 @@ namespace GoRideShare
             TimeStamp = timeStamp;
             SenderId = senderId;
             Contents = contents;
+        }
+    }
+
+        public class User
+    {          
+        [JsonPropertyName("userId")]
+        public string? UserId { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("photo")]
+        public string Photo  { get; set; }
+
+        public User
+        (
+            string userId,
+            string name,
+            string photo
+        )
+        {
+            UserId = userId;
+            Name = name;
+            Photo = photo;
+        }
+        
+        public (bool, string) validate()
+        {
+            if ( Name == "")
+            {
+                return (true, "name cannot be empty");
+            }
+            if ( Photo == "")
+            {
+                return (true, "photo cannot be empty");
+            }
+            return (false, "");
         }
     }
 }
