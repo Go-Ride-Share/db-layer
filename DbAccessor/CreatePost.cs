@@ -83,7 +83,7 @@ namespace GoRideShare
                     {
                         await command.ExecuteNonQueryAsync();
                         _logger.LogInformation("Posted successfully.");
-                        return new OkObjectResult(new { Post_id = postId });
+                        return new OkObjectResult(new { Id = postId });
                     }
                     catch (MySqlException ex)
                     {
