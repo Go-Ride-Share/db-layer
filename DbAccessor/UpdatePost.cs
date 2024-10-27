@@ -85,7 +85,7 @@ namespace GoRideShare
                     {
                         await command.ExecuteNonQueryAsync();
                         _logger.LogInformation("Post Updated successfully.");
-                        return new OkObjectResult(new { Post_id = newPost.PostId });
+                        return new OkObjectResult(new { Id = newPost.PostId });
                     }
                     catch (MySqlException ex)
                     {
