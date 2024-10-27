@@ -36,7 +36,11 @@ namespace GoRideShare
                 var response = await client.SendAsync(request);
 
                 // if its successful, then we know its 200, otherwise 404
-                return (response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+                if (response.IsSuccessStatusCode) {
+                    return (false, await response.Content.ReadAsStringAsync());
+                } else {
+                    return (true, response.StatusCode.ToString());
+                }
             }
             }
         }

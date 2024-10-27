@@ -112,6 +112,7 @@ namespace GoRideShare
             }
             catch (Exception ex)
             {
+                _logger.LogError("Error: " + ex.Message);
                 return new ObjectResult($"Failed to insert document: {ex.Message}") { StatusCode = StatusCodes.Status500InternalServerError };
             }
         }
