@@ -49,6 +49,18 @@ namespace GoRideShare
                 dateTimeLimit = parsedDateTime;
             }
 
+            // Limit is an optional Query paramter to limit the number of messages returned
+            int pollingLimit = 50; //we set default limit to 50
+            
+            if (req.Query.TryGetValue("limit", out var limitStr))
+            {
+                if (!int.TryParse(limitStr, out int parsedLimit))
+                {
+                    return new BadRequestObjectResult("Invalid limit format. Please provide a valid integer value for the limit parameter");
+                }
+                pollingLimit = parsedLimit;
+            }
+
             // Get the database collection and insert the new conversation
             IMongoCollection<Conversation> myConversations = client.GetDatabase("user_chats").GetCollection<Conversation>("conversations");
 
@@ -62,7 +74,7 @@ namespace GoRideShare
                 var conversationToFind = await myConversations.FindAsync(filter);
                 Conversation conversation = await conversationToFind.FirstOrDefaultAsync();
                 // filter first 50 messages based on the timestamp. And sort it from latest to oldest
-                conversation.Messages = conversation.Messages.Where(m => dateTimeLimit == null || m.TimeStamp > dateTimeLimit).OrderByDescending(m => m.TimeStamp).Take(50).ToList();
+                conversation.Messages = conversation.Messages.Where(m => dateTimeLimit == null || m.TimeStamp > dateTimeLimit).OrderByDescending(m => m.TimeStamp).Take(pollingLimit).ToList();
 
                 return new OkObjectResult(conversation);
             }
