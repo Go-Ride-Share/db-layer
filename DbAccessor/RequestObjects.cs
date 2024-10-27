@@ -103,15 +103,15 @@ namespace GoRideShare
 
         [JsonRequired]
         [JsonPropertyName("conversationID")]
-        public string ConversationId { get; set; }
+        public required string ConversationId { get; set; }
 
         [JsonRequired]
         [JsonPropertyName("userId")]
-        public string UserId { get; set; }
+        public required string UserId { get; set; }
         
         [JsonRequired]
         [JsonPropertyName("contents")]
-        public string Contents { get; set; }
+        public required string Contents { get; set; }
 
         [JsonRequired]
         [JsonPropertyName("timeStamp")]
@@ -143,11 +143,11 @@ namespace GoRideShare
     {
         [JsonRequired]
         [JsonPropertyName("userId")]
-        public string UserId  { get; set; }
+        public required string UserId  { get; set; }
         
         [JsonRequired]
         [JsonPropertyName("contents")]
-        public string Contents { get; set; }
+        public required string Contents { get; set; }
 
         [JsonRequired]
         [JsonPropertyName("timeStamp")]
