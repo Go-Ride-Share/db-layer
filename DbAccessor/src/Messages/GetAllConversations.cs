@@ -38,22 +38,6 @@ namespace GoRideShare
                 return validationResult;
             }
 
-
-            // Get the user name and photo details by calling SQL Get user endpoint
-            User otherUser;
-            string endpoint = $"{_dbApiUrl}/api/GetUser";
-
-            // make http request using req.Headers and endpoint to get the user details
-            var (error, response) = await Utilities.MakeHttpGetRequest(userId, endpoint);
-            if (!error && response != null)
-            {
-                otherUser = JsonSerializer.Deserialize<User>(response);
-                otherUser.UserId = userId;
-            }else{
-                return new ObjectResult("Failed to get user details from DB") { StatusCode = StatusCodes.Status404NotFound };
-            }
-
-
             // Get the database collection and insert the new conversation
             IMongoCollection<Conversation> myConversations = client.GetDatabase("user_chats").GetCollection<Conversation>("conversations");
 
@@ -61,6 +45,9 @@ namespace GoRideShare
             BsonDocument filter = new BsonDocument{
                 { "users", userId }
             };
+
+            User otherUser;
+            string endpoint = $"{_dbApiUrl}/api/GetUser";
 
             List<ConversationResponse> responseObj = new List<ConversationResponse>();
             try
@@ -70,6 +57,18 @@ namespace GoRideShare
                 // keep only latest message of each conversation by checking its timestamp property
                 foreach (var convo in conversations)
                 {
+                    string otherUserId = convo.Users.First(u => u != userId);
+                    var (error, response) = await Utilities.MakeHttpGetRequest(otherUserId, endpoint);
+                    if (!error && response != null)
+                    {
+                        otherUser = JsonSerializer.Deserialize<User>(response);
+                        otherUser.UserId = otherUserId;
+                    }
+                    else
+                    {
+                        return new ObjectResult("Failed to get user details from DB") { StatusCode = StatusCodes.Status404NotFound };
+                    }
+
                     convo.Messages = convo.Messages.OrderByDescending(m => m.TimeStamp).Take(1).ToList();
                     responseObj.Add(new ConversationResponse(convo.ConversationId, otherUser, convo.Messages));
                 }
