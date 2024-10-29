@@ -55,21 +55,28 @@ namespace GoRideShare
                             var posts = new List<object>();
                             while (await reader.ReadAsync())
                             {
-                                var post = new PostDetails
+                                //Double check all of the required fields are present
+                                bool hasNulls = typeof(PostDetails).GetProperties()
+                                    .Any(property => reader.IsDBNull(reader.GetOrdinal(property.Name)));
+
+                                if(!hasNulls)
                                 {
-                                    PostId = reader["post_id"].ToString(),
-                                    PosterId = reader["poster_id"].ToString(),
-                                    Name = reader["name"].ToString(),
-                                    Description = reader["description"].ToString(),
-                                    DepartureDate = reader["departure_date"].ToString(),
-                                    OriginLat = reader.GetFloat(reader.GetOrdinal("origin_lat")),
-                                    OriginLng = reader.GetFloat(reader.GetOrdinal("origin_lng")),
-                                    DestinationLat = reader.GetFloat(reader.GetOrdinal("destination_lat")),
-                                    DestinationLng = reader.GetFloat(reader.GetOrdinal("destination_lng")),
-                                    Price = reader.GetFloat(reader.GetOrdinal("price")),
-                                    SeatsAvailable = reader.GetInt32(reader.GetOrdinal("seats_available"))
-                                };
-                                posts.Add(post);
+                                    var post = new PostDetails
+                                    {
+                                        PostId          = reader.GetString(reader.GetOrdinal("post_id")),
+                                        PosterId        = reader.GetGuid(  reader.GetOrdinal("poster_id")),
+                                        Name            = reader.GetString(reader.GetOrdinal("name")),
+                                        Description     = reader.GetString(reader.GetOrdinal("description")),
+                                        DepartureDate   = reader.GetString(reader.GetOrdinal("departure_date")),
+                                        OriginLat       = reader.GetFloat( reader.GetOrdinal("origin_lat")),
+                                        OriginLng       = reader.GetFloat( reader.GetOrdinal("origin_lng")),
+                                        DestinationLat  = reader.GetFloat( reader.GetOrdinal("destination_lat")),
+                                        DestinationLng  = reader.GetFloat( reader.GetOrdinal("destination_lng")),
+                                        Price           = reader.GetFloat( reader.GetOrdinal("price")),
+                                        SeatsAvailable  = reader.GetInt32( reader.GetOrdinal("seats_available"))
+                                    };
+                                    posts.Add(post);
+                                }
                             }
                             _logger.LogInformation("Posts retrieved successfully.");
                             return new OkObjectResult(posts);

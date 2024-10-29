@@ -24,9 +24,7 @@ namespace GoRideShare
             
             // Validate the required fields
             if (newPost == null || string.IsNullOrEmpty(newPost.Name) ||
-                string.IsNullOrEmpty(newPost.PostId) ||   
                 string.IsNullOrEmpty(newPost.Description) || 
-                string.IsNullOrEmpty(newPost.PosterId) || 
                 90 < newPost.OriginLat || newPost.OriginLat < -90 ||
                 90 < newPost.DestinationLat || newPost.DestinationLat < -90 ||
                 180 < newPost.OriginLng || newPost.OriginLng < -180 ||

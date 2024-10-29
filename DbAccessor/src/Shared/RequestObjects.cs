@@ -36,66 +36,51 @@ namespace GoRideShare
 
     public class PostDetails
     {
+        [JsonRequired]
         [JsonPropertyName("postId")]
-        public string PostId { get; set; }
+        public required string PostId { get; set; }
         
+        [JsonRequired]
         [JsonPropertyName("posterId")]
-        public string PosterId { get; set; }
+        public required Guid PosterId { get; set; }
 
+        [JsonRequired]
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
+        [JsonRequired]
         [JsonPropertyName("description")]
-        public string Description { get; set; }
+        public required string Description { get; set; }
 
+        [JsonRequired]
         [JsonPropertyName("originLat")]
-        public float OriginLat { get; set; }
+        public required float OriginLat { get; set; }
 
+        [JsonRequired]
         [JsonPropertyName("originLng")]
-        public float OriginLng { get; set; }
+        public required float OriginLng { get; set; }
 
+        [JsonRequired]        
         [JsonPropertyName("destinationLat")]
-        public float DestinationLat { get; set; }
+        public required float DestinationLat { get; set; }
 
+        [JsonRequired]
         [JsonPropertyName("destinationLng")]
-        public float DestinationLng { get; set; }
+        public required float DestinationLng { get; set; }
 
+        [JsonRequired]
         [JsonPropertyName("price")]
-        public float Price { get; set; }
+        public required float Price { get; set; }
 
+        [JsonRequired]
         [JsonPropertyName("seatsAvailable")]
-        public int SeatsAvailable { get; set; }
+        public required int SeatsAvailable { get; set; }
 
+        [JsonRequired]
         [JsonPropertyName("departureDate")]
         public required string DepartureDate { get; set; }
 
-        public PostDetails() { }
-
-        public PostDetails(
-            string postId,
-            string posterId,
-            string name,
-            string description,
-            string departureDate,
-            float originLat,
-            float originLng,
-            float destinationLat,
-            float destinationLng,
-            float price,
-            int seatsAvailable)
-        {
-            PostId = postId;
-            PosterId = posterId;
-            Name = name;
-            Description = description;
-            OriginLat = originLat;
-            OriginLng = originLng;
-            DestinationLat = destinationLat;
-            DestinationLng = destinationLng;
-            Price = price;
-            SeatsAvailable = seatsAvailable;
-            DepartureDate = departureDate;
-        }
+        public PostDetails(){}
     }
 
     public class PostMessageRequest
