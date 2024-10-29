@@ -232,7 +232,7 @@ namespace GoRideShare
         }
     }
 
-        public class User
+    public class User
     {          
         [JsonPropertyName("userId")]
         public Guid? UserId { get; set; }

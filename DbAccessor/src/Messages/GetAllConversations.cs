@@ -10,8 +10,6 @@ namespace GoRideShare
 {
     public class GetAllConversations
     {
-
-        private readonly string? _dbApiUrl;
         private readonly ILogger<GetAllConversations> _logger;
         // initialize the MongoDB client lazily. This is a best practice for serverless functions because it is not efficient to establish Mongo connections on every execution of our Azure Function
         public static Lazy<MongoClient> lazyClient = new Lazy<MongoClient>(InitializeMongoClient);
@@ -25,7 +23,6 @@ namespace GoRideShare
         public GetAllConversations(ILogger<GetAllConversations> logger)
         {
             _logger = logger;
-            _dbApiUrl = Environment.GetEnvironmentVariable("DB_URL");
         }
 
         [Function("GetAllConversations")]
@@ -57,7 +54,7 @@ namespace GoRideShare
                 {
                     // Fetch users from SQL
                     List<Guid> userIds = [.. conversations.SelectMany(convo => convo.Users).Where(u => u != userId)];
-                    List<User> users = await FetchUser.FetchUsers(userIds, _logger);    //Throws an Exception
+                    List<User> users = await UserDB.FetchUsers(userIds);    //Throws an Exception
                     Guid otherUser = Guid.Empty;
                     
                     //Connect the User info to their conversation

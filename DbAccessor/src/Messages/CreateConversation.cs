@@ -45,11 +45,16 @@ namespace GoRideShare
             {
                 convoRequest = JsonSerializer.Deserialize<ConversationRequest>(requestBody);
 
-                var (invalid, errorMessage) = convoRequest.validate();
-                if (invalid)
-                {
-                    return new BadRequestObjectResult(errorMessage);
+                if (convoRequest != null) {
+                    var (invalid, errorMessage) = convoRequest.validate();
+                    if (invalid)
+                    {
+                        return new BadRequestObjectResult(errorMessage);
+                    }
+                } else {
+                    return new BadRequestObjectResult("Input was null");
                 }
+
             }
             catch (JsonException ex)
             {
@@ -58,21 +63,17 @@ namespace GoRideShare
             }
             _logger.LogInformation($"Raw Request Body: {JsonSerializer.Serialize(requestBody)}");
 
-
-            // Get the user name and photo details by calling SQL Get user endpoint
-            User otherUser;
-            string endpoint = $"{_dbApiUrl}/api/GetUser";
-
-            // make http request using req.Headers and endpoint to get the user details
-            var (error, response) = await Utilities.MakeHttpGetRequest(convoRequest.UserId, endpoint);
-            if (!error && response != null)
+            User? otherUser;
+            try
             {
-                _logger.LogInformation("Response: " + response);
-                otherUser = JsonSerializer.Deserialize<User>(response);
-                otherUser.UserId = convoRequest.UserId;
-            }else{
-                _logger.LogError("Error" + response);
-                return new ObjectResult($"Failed to get user details from DB: {response}") { StatusCode = StatusCodes.Status404NotFound };
+                otherUser = await UserDB.FetchUser(convoRequest.UserId);
+                if ( otherUser == null) {
+                    return new ObjectResult($"ERROR: Failed to get user details from DB") { StatusCode = StatusCodes.Status500InternalServerError };
+                }
+            }
+            catch (Exception e)
+            {
+                return new ObjectResult($"ERROR: Failed to access the DB: {e.Message}") { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             Message newMessage = new Message

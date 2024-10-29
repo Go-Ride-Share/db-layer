@@ -7,7 +7,7 @@ namespace GoRideShare
     public static class Utilities
     {
         // Method that validates headers, outputs the userID and dbToken, returns exception if headers  missing, null if headers are good
-        public static IActionResult ValidateHeaders(IHeaderDictionary headers, out Guid userId)
+        public static IActionResult? ValidateHeaders(IHeaderDictionary headers, out Guid userId)
         {
             userId = Guid.Empty;
             // Check for X-User-ID  and X-DbToken headers
@@ -19,7 +19,7 @@ namespace GoRideShare
             {
                 userId = Guid.Parse(userIdValue.ToString());
             }
-            catch (FormatException e)
+            catch (FormatException)
             {
                 return new BadRequestObjectResult("ERROR: Invalid X-User-ID Header: Not a Guid");
             }

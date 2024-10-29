@@ -38,11 +38,16 @@ namespace GoRideShare
             {
                 incomingRequest = JsonSerializer.Deserialize<PostMessageRequest>(requestBody);
 
-                var (invalid, errorMessage) = incomingRequest.validate();
-                if (invalid)
-                {
-                    return new BadRequestObjectResult(errorMessage);
+                if (incomingRequest != null) {
+                    var (invalid, errorMessage) = incomingRequest.validate();
+                    if (invalid)
+                    {
+                        return new BadRequestObjectResult(errorMessage);
+                    }
+                } else {
+                    return new BadRequestObjectResult("Input was null");
                 }
+
             }
             catch (JsonException ex)
             {
