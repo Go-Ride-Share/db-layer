@@ -32,7 +32,7 @@ namespace GoRideShare
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
             // If validation result is not null, return the bad request result
-            var validationResult = Utilities.ValidateHeaders(req.Headers, out string userId);
+            var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
             if (validationResult != null)
             {
                 return validationResult;
@@ -42,35 +42,30 @@ namespace GoRideShare
             IMongoCollection<Conversation> myConversations = client.GetDatabase("user_chats").GetCollection<Conversation>("conversations");
 
             // Get all conversations where the user string is included in the list of userIDs
-            BsonDocument filter = new BsonDocument{
-                { "users", userId }
-            };
-
-            User otherUser;
-            string endpoint = $"{_dbApiUrl}/api/GetUser";
-
+            BsonDocument filter = new BsonDocument{ { "users", userId } };
             List<ConversationResponse> responseObj = new List<ConversationResponse>();
+
             try
             {
+                // Fetch only the latest message of each conversation by checking its timestamp property
                 var conversationsToFind = await myConversations.FindAsync(filter);
-                List<Conversation> conversations = await conversationsToFind.ToListAsync();
-                // keep only latest message of each conversation by checking its timestamp property
-                foreach (var convo in conversations)
-                {
-                    string otherUserId = convo.Users.First(u => u != userId);
-                    var (error, response) = await Utilities.MakeHttpGetRequest(otherUserId, endpoint);
-                    if (!error && response != null)
-                    {
-                        otherUser = JsonSerializer.Deserialize<User>(response);
-                        otherUser.UserId = otherUserId;
-                    }
-                    else
-                    {
-                        return new ObjectResult("Failed to get user details from DB") { StatusCode = StatusCodes.Status404NotFound };
-                    }
 
-                    convo.Messages = convo.Messages.OrderByDescending(m => m.TimeStamp).Take(1).ToList();
-                    responseObj.Add(new ConversationResponse(convo.ConversationId, otherUser, convo.Messages));
+                // Fetch conversations from MongoDB
+                List<Conversation> conversations = await conversationsToFind.ToListAsync();
+
+                if(conversations.Count > 0)
+                {
+                    // Fetch users from SQL
+                    List<Guid> userIds = [.. conversations.SelectMany(convo => convo.Users).Where(u => u != userId)];
+                    List<User> users = await FetchUser.FetchUsers(userIds, _logger);    //Throws an Exception
+                    Guid otherUser = Guid.Empty;
+                    
+                    //Connect the User info to their conversation
+                    foreach (var convo in conversations)
+                    {
+                        otherUser = convo.Users.First(u => u != userId);
+                        responseObj.Add(new ConversationResponse(convo.ConversationId, users.First(u => u.UserId == otherUser), convo.Messages));
+                    }
                 }
                 return new OkObjectResult(responseObj);
             }

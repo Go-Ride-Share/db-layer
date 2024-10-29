@@ -106,7 +106,7 @@ namespace GoRideShare
 
         [JsonRequired]
         [JsonPropertyName("userId")]
-        public required string UserId { get; set; }
+        public required Guid UserId { get; set; }
         
         [JsonRequired]
         [JsonPropertyName("contents")]
@@ -126,10 +126,6 @@ namespace GoRideShare
             {
                 return (true, "contents cannot be empty");
             }
-            if (UserId == "")
-            {
-                return (true, "userId is invalid");
-            }
             if (TimeStamp == DateTime.MinValue || TimeStamp > DateTime.Now) // Check if the timestamp is in the future or invalid
             {
                 return (true, "timeStamp is invalid");
@@ -142,7 +138,7 @@ namespace GoRideShare
     {
         [JsonRequired]
         [JsonPropertyName("userId")]
-        public required string UserId  { get; set; }
+        public required Guid UserId  { get; set; }
         
         [JsonRequired]
         [JsonPropertyName("contents")]
@@ -157,10 +153,6 @@ namespace GoRideShare
             if ( Contents == "")
             {
                 return (true, "contents cannot be empty");
-            }
-            if ( UserId == "")
-            {
-                return (true, "userId is invalid");
             }
             if (TimeStamp == DateTime.MinValue || TimeStamp > DateTime.Now) // Check if the timestamp is in the future or invalid
             {
@@ -207,7 +199,7 @@ namespace GoRideShare
         [BsonElement("users")]
         [JsonRequired]
         [JsonPropertyName("users")]
-        public List<string> Users { get; set; } = null!;
+        public List<Guid> Users { get; set; } = null!;
 
         [BsonElement("messages")]
         [JsonRequired]
@@ -216,7 +208,7 @@ namespace GoRideShare
 
         public Conversation
         (
-            List<String> users,
+            List<Guid> users,
             List<Message> messages
         )
         {
@@ -230,7 +222,7 @@ namespace GoRideShare
         [BsonElement("senderId")]
         [JsonRequired]
         [JsonPropertyName("senderId")]
-        public string SenderId { get; set; }
+        public Guid SenderId { get; set; }
 
         [BsonElement("contents")]
         [JsonRequired]
@@ -244,7 +236,7 @@ namespace GoRideShare
 
         public Message
         (
-            string senderId,
+            Guid senderId,
             string contents,
             DateTime timeStamp
         )
@@ -258,7 +250,7 @@ namespace GoRideShare
         public class User
     {          
         [JsonPropertyName("userId")]
-        public string? UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         [JsonRequired]
         [JsonPropertyName("name")]
@@ -270,7 +262,7 @@ namespace GoRideShare
 
         public User
         (
-            string userId,
+            Guid userId,
             string name,
             string photo
         )
