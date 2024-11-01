@@ -26,14 +26,13 @@ namespace GoRideShare
                         while (await reader.ReadAsync())
                         {
                             //Double check all of the required fields are present
-                            bool hasNulls = typeof(PostDetails).GetProperties()
-                                .Any(property => reader.IsDBNull(reader.GetOrdinal(property.Name)));
+                            bool hasNulls = reader.IsDBNull(0) || reader.IsDBNull(1);
 
                             if(!hasNulls)
                             {
                                 var user_id = reader.GetGuid(0);
                                 var name = reader.GetString(1);
-                                var photo = reader.GetString(2);
+                                var photo = reader.IsDBNull(2) ? "" : reader.GetString(2);
                                 userObjects.Add( new User(user_id, name, photo ) );
                             }
                         }
@@ -53,7 +52,7 @@ namespace GoRideShare
                 await connection.OpenAsync(); // Throws an exceptions
                 
                 // Query to retrieve user by userID
-                var query = $"SELECT user_id, name, photo FROM users WHERE user_id IN ( {userId} )";
+                var query = $"SELECT user_id, name, photo FROM users WHERE user_id IN ( '{userId}' )";
                 using (var command = new MySqlCommand(query, connection))
                 {
                     using (var reader = await command.ExecuteReaderAsync())
@@ -61,21 +60,19 @@ namespace GoRideShare
                         if (await reader.ReadAsync())
                         {
                             //Double check all of the required fields are present
-                            bool hasNulls = typeof(PostDetails).GetProperties()
-                                .Any(property => reader.IsDBNull(reader.GetOrdinal(property.Name)));
+                            bool hasNulls = reader.IsDBNull(0) || reader.IsDBNull(1);
 
                             if(!hasNulls)
                             {
                                 var user_id = reader.GetGuid(0);
                                 var name = reader.GetString(1);
-                                var photo = reader.GetString(2);
+                                var photo = reader.IsDBNull(2) ? "" : reader.GetString(2);
                                 return new User(user_id, name, photo );
                             }
                             return null;
                         }
                         else
                         {
-                            // Return 404 Not Found if no user is found
                             return null;
                         }
                     }

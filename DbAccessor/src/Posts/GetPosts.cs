@@ -67,15 +67,10 @@ namespace GoRideShare
                             var posts = new List<object>();
                             while (await reader.ReadAsync())
                             {
-                                //Double check all of the required fields are present
-                                bool hasNulls = typeof(PostDetails).GetProperties()
-                                    .Any(property => reader.IsDBNull(reader.GetOrdinal(property.Name)));
-
-                                if(!hasNulls)
-                                {
+                                try{
                                     var post = new PostDetails
                                     {
-                                        PostId          = reader.GetString(reader.GetOrdinal("post_id")),
+                                        PostId          = reader.GetGuid(  reader.GetOrdinal("post_id")),
                                         PosterId        = reader.GetGuid(  reader.GetOrdinal("poster_id")),
                                         Name            = reader.GetString(reader.GetOrdinal("name")),
                                         Description     = reader.GetString(reader.GetOrdinal("description")),
@@ -88,6 +83,11 @@ namespace GoRideShare
                                         SeatsAvailable  = reader.GetInt32( reader.GetOrdinal("seats_available"))
                                     };
                                     posts.Add(post);
+                                } 
+                                catch (Exception)
+                                {
+                                    //Shouldn't be possible, but invalid database entries can cause it.
+                                    _logger.LogWarning($"Invalid post in DB"); 
                                 }
                             }
                             _logger.LogInformation("Posts retrieved successfully.");

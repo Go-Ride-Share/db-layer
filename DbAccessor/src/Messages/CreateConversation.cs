@@ -12,7 +12,7 @@ namespace GoRideShare
     public class CreateConversation
     {
         private readonly ILogger<CreateConversation> _logger;
-        private readonly string? _dbApiUrl;
+
         // initialize the MongoDB client lazily. This is a best practice for serverless functions because it is not efficient to establish Mongo connections on every execution of our Azure Function
         public static Lazy<MongoClient> lazyClient = new Lazy<MongoClient>(InitializeMongoClient);
         public static MongoClient client = lazyClient.Value;
@@ -25,7 +25,6 @@ namespace GoRideShare
         public CreateConversation(ILogger<CreateConversation> logger)
         {
             _logger = logger;
-            _dbApiUrl = Environment.GetEnvironmentVariable("DB_URL");
         }
         
         [Function("CreateConversation")]
@@ -35,11 +34,14 @@ namespace GoRideShare
             var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
             if (validationResult != null)
             {
+                _logger.LogError("Invalid Headers");
                 return validationResult;
             }
 
             // Read the request body to get the user's registration information
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            _logger.LogInformation($"Raw Request Body: {JsonSerializer.Serialize(requestBody)}");
+
             ConversationRequest? convoRequest;
             try
             {
@@ -49,38 +51,46 @@ namespace GoRideShare
                     var (invalid, errorMessage) = convoRequest.validate();
                     if (invalid)
                     {
+                        _logger.LogError($"convoRequest is not valid: {errorMessage}");
                         return new BadRequestObjectResult(errorMessage);
                     }
                 } else {
+                    _logger.LogError("Input was null");
                     return new BadRequestObjectResult("Input was null");
                 }
-
             }
             catch (JsonException ex)
             {
                 _logger.LogError($"JSON deserialization failed: {ex.Message}");
                 return new BadRequestObjectResult("Incomplete Conversation Request data.");
             }
-            _logger.LogInformation($"Raw Request Body: {JsonSerializer.Serialize(requestBody)}");
+
+            if (convoRequest.UserId == userId)
+            {
+                _logger.LogError("You cannot start a conversation with yourself");
+                return new BadRequestObjectResult("You cannot start a conversation with yourself"); 
+            }
 
             User? otherUser;
             try
             {
                 otherUser = await UserDB.FetchUser(convoRequest.UserId);
                 if ( otherUser == null) {
-                    return new ObjectResult($"ERROR: Failed to get user details from DB") { StatusCode = StatusCodes.Status500InternalServerError };
+                    _logger.LogError("Failed to get user details from DB");
+                    return new ObjectResult("Failed to get user details from DB") { StatusCode = StatusCodes.Status500InternalServerError };
                 }
             }
             catch (Exception e)
             {
-                return new ObjectResult($"ERROR: Failed to access the DB: {e.Message}") { StatusCode = StatusCodes.Status500InternalServerError };
+                _logger.LogError($"A Database Error Occured: {e.Message}");
+                return new ObjectResult($"Failed to access the DB: {e.Message}") { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             Message newMessage = new Message
             (
-                userId, // the user who initiated the conversation by sending a message is the "SenderId" of the message
-                convoRequest.Contents, 
-                convoRequest.TimeStamp
+                senderId: userId,
+                contents: convoRequest.Contents, 
+                timeStamp: convoRequest.TimeStamp
             );
             
             // Create a document for DB insertion
@@ -101,7 +111,7 @@ namespace GoRideShare
             {
                 await convoCollection.InsertOneAsync(newConversation);
                 
-                            // Response object includes User details, hence its seperate from the conversation object
+                // Response object includes User details, hence its seperate from the conversation object
                 var responseObj = new ConversationResponse
                 (
                     newConversation.ConversationId, 
