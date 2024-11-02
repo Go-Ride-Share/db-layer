@@ -28,6 +28,7 @@ namespace GoRideShare
             var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
             if (validationResult != null)
             {
+                _logger.LogError("Invalid Headers");
                 return validationResult;
             }
 
@@ -42,12 +43,13 @@ namespace GoRideShare
                     var (invalid, errorMessage) = incomingRequest.validate();
                     if (invalid)
                     {
+                        _logger.LogError(errorMessage);
                         return new BadRequestObjectResult(errorMessage);
                     }
                 } else {
+                    _logger.LogError("Input was null");
                     return new BadRequestObjectResult("Input was null");
                 }
-
             }
             catch (JsonException ex)
             {
@@ -81,6 +83,7 @@ namespace GoRideShare
                 }
                 else
                 {
+                    _logger.LogError("Failed to save message.");
                     return new BadRequestObjectResult("Failed to save message.");
                 }
 

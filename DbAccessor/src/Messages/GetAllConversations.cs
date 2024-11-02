@@ -32,6 +32,7 @@ namespace GoRideShare
             var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
             if (validationResult != null)
             {
+                _logger.LogError("Invalid Headers");
                 return validationResult;
             }
 
