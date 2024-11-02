@@ -21,6 +21,15 @@ namespace GoRideShare
             {
                 return new BadRequestObjectResult("Missing User-ID");
             }
+            try
+            {
+                // Validate it is a valid GUID
+                userId = Guid.Parse(userId.ToString()).ToString();
+            }
+            catch (FormatException)
+            {
+                return new BadRequestObjectResult("ERROR: Invalid X-User-ID Header: Not a Guid");
+            }
             _logger.LogInformation($"UserId from Query: {userId}");
 
             // Retrieve the database connection string from environment variables
