@@ -81,6 +81,40 @@ namespace GoRideShare
         public required string DepartureDate { get; set; }
 
         public PostDetails(){}
+
+        public (bool, string) validate()
+        {
+            if (DepartureDate == "")
+            {
+                return (true, "DepartureDate cannot be empty");
+            }
+            if (Description == "")
+            {
+                return (true, "Description cannot be empty");
+            }
+            if (Name == "")
+            {
+                return (true, "Name cannot be empty");
+            }
+            if ( 90 < OriginLat || OriginLat < -90 )
+            {
+                return (true, "OriginLat is Invalid");
+            }
+            if ( 180 < OriginLng || OriginLng < -180 )
+            {
+                return (true, "OriginLat is Invalid");
+            }
+            if ( 180 < OriginLng || OriginLng < -180 )
+            {
+                return (true, "OriginLng is Invalid");
+            }
+            if ( 180 < DestinationLng || DestinationLng < -180 )
+            {
+                return (true, "DestinationLng is Invalid");
+            }
+            
+            return (false, "");
+        }
     }
 
     public class PostMessageRequest

@@ -65,7 +65,7 @@ namespace GoRideShare
                             {
                                 var storedUserId = reader.IsDBNull(0) ? null : reader.GetGuid(0).ToString();
                                 var storedPasswordHash = reader.IsDBNull(1) ? null : reader.GetString(1);
-                                var storedPhoto = reader.IsDBNull(2) ? null : reader.GetString(2); ;
+                                var storedPhoto = reader.IsDBNull(2) ? null : reader.GetString(2);
 
                                 // Check if password and username exist, and passwords match
                                 if (storedPasswordHash == null || storedUserId == null || storedPasswordHash != userToLogin.PasswordHash)
