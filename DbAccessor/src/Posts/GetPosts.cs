@@ -1,3 +1,4 @@
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -15,13 +16,21 @@ namespace GoRideShare
         [Function("GetPosts")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
-            _logger.LogInformation("userId");
             // Validate if essential data is present
             if (!req.Query.TryGetValue("userId", out var userId))
             {
                 return new BadRequestObjectResult("Missing User-ID");
             }
-            _logger.LogInformation(userId);
+            try
+            {
+                // Validate it is a valid GUID
+                userId = Guid.Parse(userId.ToString()).ToString();
+            }
+            catch (FormatException)
+            {
+                return new BadRequestObjectResult("ERROR: Invalid X-User-ID Header: Not a Guid");
+            }
+            _logger.LogInformation($"UserId from Query: {userId}");
 
             // Retrieve the database connection string from environment variables
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
@@ -30,7 +39,7 @@ namespace GoRideShare
                 // Validate the connection string before trying to open the connection
                 if (string.IsNullOrWhiteSpace(connectionString))
                 {
-                    _logger.LogError("Invalid connection string.");
+                    _logger.LogError("Invalid database connection string.");
                     return new ObjectResult("Invalid database credentials.")
                     {
                         StatusCode = StatusCodes.Status401Unauthorized
@@ -67,21 +76,28 @@ namespace GoRideShare
                             var posts = new List<object>();
                             while (await reader.ReadAsync())
                             {
-                                var post = new PostDetails
+                                try{
+                                    var post = new PostDetails
+                                    {
+                                        PostId          = reader.GetGuid(  reader.GetOrdinal("post_id")),
+                                        PosterId        = reader.GetGuid(  reader.GetOrdinal("poster_id")),
+                                        Name            = reader.GetString(reader.GetOrdinal("name")),
+                                        Description     = reader.GetString(reader.GetOrdinal("description")),
+                                        DepartureDate   = reader.GetString(reader.GetOrdinal("departure_date")),
+                                        OriginLat       = reader.GetFloat( reader.GetOrdinal("origin_lat")),
+                                        OriginLng       = reader.GetFloat( reader.GetOrdinal("origin_lng")),
+                                        DestinationLat  = reader.GetFloat( reader.GetOrdinal("destination_lat")),
+                                        DestinationLng  = reader.GetFloat( reader.GetOrdinal("destination_lng")),
+                                        Price           = reader.GetFloat( reader.GetOrdinal("price")),
+                                        SeatsAvailable  = reader.GetInt32( reader.GetOrdinal("seats_available"))
+                                    };
+                                    posts.Add(post);
+                                } 
+                                catch (Exception)
                                 {
-                                    PostId = reader["post_id"].ToString(),
-                                    PosterId = reader["poster_id"].ToString(),
-                                    Name = reader["name"].ToString(),
-                                    Description = reader["description"].ToString(),
-                                    DepartureDate = reader["departure_date"].ToString(),
-                                    OriginLat = reader.GetFloat(reader.GetOrdinal("origin_lat")),
-                                    OriginLng = reader.GetFloat(reader.GetOrdinal("origin_lng")),
-                                    DestinationLat = reader.GetFloat(reader.GetOrdinal("destination_lat")),
-                                    DestinationLng = reader.GetFloat(reader.GetOrdinal("destination_lng")),
-                                    Price = reader.GetFloat(reader.GetOrdinal("price")),
-                                    SeatsAvailable = reader.GetInt32(reader.GetOrdinal("seats_available"))
-                                };
-                                posts.Add(post);
+                                    //Shouldn't be possible, but invalid database entries can cause it.
+                                    _logger.LogWarning($"Invalid post in DB"); 
+                                }
                             }
                             _logger.LogInformation("Posts retrieved successfully.");
                             return new OkObjectResult(posts);

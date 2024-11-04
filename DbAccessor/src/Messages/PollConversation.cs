@@ -12,7 +12,6 @@ namespace GoRideShare
     {
 
         private readonly ILogger<PollConversation> _logger;
-        private readonly string? _dbApiUrl;
 
         // initialize the MongoDB client lazily. This is a best practice for serverless functions because it is not efficient to establish Mongo connections on every execution of our Azure Function
         public static Lazy<MongoClient> lazyClient = new Lazy<MongoClient>(InitializeMongoClient);
@@ -26,16 +25,16 @@ namespace GoRideShare
         public PollConversation(ILogger<PollConversation> logger)
         {
             _logger = logger;
-            _dbApiUrl = Environment.GetEnvironmentVariable("DB_URL");
         }
 
         [Function("PollConversation")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
             // If validation result is not null, return the bad request result
-            var validationResult = Utilities.ValidateHeaders(req.Headers, out string userId);
+            var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
             if (validationResult != null)
             {
+                _logger.LogError("Invalid Headers");
                 return validationResult;
             }
 
@@ -84,24 +83,22 @@ namespace GoRideShare
                 // filter first 50 messages based on the timestamp. And sort it from latest to oldest
                 conversation.Messages = conversation.Messages.Where(m => dateTimeLimit == null || m.TimeStamp > dateTimeLimit).OrderByDescending(m => m.TimeStamp).Take(pollingLimit).ToList();
 
-
                 // fetch the other person's userId from the conversation object
-                string otherUserId = conversation.Users.First(u => u != userId);
-                // Get the user name and photo details by calling SQL Get user endpoint
-                User otherUser;
-                string endpoint = $"{_dbApiUrl}/api/GetUser";
+                Guid otherUserId = conversation.Users.First(u => u != userId);
+                User? otherUser;
 
-                // make http request using req.Headers and endpoint to get the user details
-                var (error, response) = await Utilities.MakeHttpGetRequest(otherUserId, endpoint);
-                if (!error && response != null)
+                try
                 {
-                    _logger.LogInformation("Response: " + response);
-                    otherUser = JsonSerializer.Deserialize<User>(response);
-                    otherUser.UserId = otherUserId;
-                }else{
-                    _logger.LogError("Error" + response);
-                    return new ObjectResult($"Failed to get user details from DB: {response}") { StatusCode = StatusCodes.Status404NotFound };
+                    otherUser = await UserDB.FetchUser(otherUserId);
+                    if ( otherUser == null) {
+                        return new ObjectResult($"ERROR: Failed to get user details from DB") { StatusCode = StatusCodes.Status500InternalServerError };
+                    }
                 }
+                catch (Exception e)
+                {
+                    return new ObjectResult($"ERROR: Failed to access the DB: {e.Message}") { StatusCode = StatusCodes.Status500InternalServerError };
+                }
+
 
                 // create a response object
                 var responseObj = new ConversationResponse

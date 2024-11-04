@@ -25,9 +25,10 @@ namespace GoRideShare
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
             // If validation result is not null, return the bad request result
-            var validationResult = Utilities.ValidateHeaders(req.Headers, out string userId);
+            var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
             if (validationResult != null)
             {
+                _logger.LogError("Invalid Headers");
                 return validationResult;
             }
 
@@ -38,10 +39,16 @@ namespace GoRideShare
             {
                 incomingRequest = JsonSerializer.Deserialize<PostMessageRequest>(requestBody);
 
-                var (invalid, errorMessage) = incomingRequest.validate();
-                if (invalid)
-                {
-                    return new BadRequestObjectResult(errorMessage);
+                if (incomingRequest != null) {
+                    var (invalid, errorMessage) = incomingRequest.validate();
+                    if (invalid)
+                    {
+                        _logger.LogError(errorMessage);
+                        return new BadRequestObjectResult(errorMessage);
+                    }
+                } else {
+                    _logger.LogError("Input was null");
+                    return new BadRequestObjectResult("Input was null");
                 }
             }
             catch (JsonException ex)
@@ -76,6 +83,7 @@ namespace GoRideShare
                 }
                 else
                 {
+                    _logger.LogError("Failed to save message.");
                     return new BadRequestObjectResult("Failed to save message.");
                 }
 
