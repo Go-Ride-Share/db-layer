@@ -36,9 +36,8 @@ namespace GoRideShare
 
     public class PostDetails
     {
-        [JsonRequired]
         [JsonPropertyName("postId")]
-        public required Guid PostId { get; set; }
+        public Guid? PostId { get; set; }
         
         [JsonRequired]
         [JsonPropertyName("posterId")]

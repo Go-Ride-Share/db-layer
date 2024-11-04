@@ -18,20 +18,32 @@ namespace GoRideShare
         {
             // Read the request body to get the post details
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var newPost = JsonSerializer.Deserialize<PostDetails>(requestBody);
-
-            _logger.LogInformation($"Raw Request Body: {requestBody}");
-            
-            // Validate the required fields
-            if (newPost == null || string.IsNullOrEmpty(newPost.Name) ||
-                string.IsNullOrEmpty(newPost.Description) || 
-                90 < newPost.OriginLat || newPost.OriginLat < -90 ||
-                90 < newPost.DestinationLat || newPost.DestinationLat < -90 ||
-                180 < newPost.OriginLng || newPost.OriginLng < -180 ||
-                180 < newPost.DestinationLng || newPost.DestinationLng < -180)
+            PostDetails? newPost;
+            try
             {
-                return new BadRequestObjectResult("Incomplete post data.");
+                newPost = JsonSerializer.Deserialize<PostDetails>(requestBody);
+
+                if (newPost != null) {
+                    var (invalid, errorMessage) = newPost.validate();
+                    if (invalid)
+                    {
+                        _logger.LogError($"PostDetails are not valid: {errorMessage}");
+                        return new BadRequestObjectResult(errorMessage);
+                    }
+                    if (newPost.PostId != null) {
+                        _logger.LogWarning($"PostID was present in request body; Ignoring PostID");
+                    }
+                } else {
+                    _logger.LogError("Input was null");
+                    return new BadRequestObjectResult("Input was null");
+                }
             }
+            catch (JsonException ex)
+            {
+                _logger.LogError($"JSON deserialization failed: {ex.Message}");
+                return new BadRequestObjectResult("Incomplete Post data.");
+            }
+            _logger.LogInformation($"Raw Request Body: {requestBody}");
 
             // Retrieve the database connection string from environment variables
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");

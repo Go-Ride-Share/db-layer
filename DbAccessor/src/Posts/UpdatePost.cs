@@ -30,6 +30,10 @@ namespace GoRideShare
                         _logger.LogError($"PostDetails are not valid: {errorMessage}");
                         return new BadRequestObjectResult(errorMessage);
                     }
+                    if (newPost.PostId == null) {
+                        _logger.LogError($"PostID is missing");
+                        return new BadRequestObjectResult("PostID is missing");
+                    }
                 } else {
                     _logger.LogError("Input was null");
                     return new BadRequestObjectResult("Input was null");
@@ -38,7 +42,7 @@ namespace GoRideShare
             catch (JsonException ex)
             {
                 _logger.LogError($"JSON deserialization failed: {ex.Message}");
-                return new BadRequestObjectResult("Incomplete Conversation Request data.");
+                return new BadRequestObjectResult("Incomplete Post data.");
             }
             _logger.LogInformation($"Raw Request Body: {requestBody}");
 
