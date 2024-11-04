@@ -7,21 +7,14 @@ using MySql.Data.MySqlClient;
 namespace GoRideShare
 {
     // This class handles making a new Post
-    public class GetPosts(ILogger<GetPosts> logger)
+    public class GetAllPosts(ILogger<GetAllPosts> logger)
     {
-        private readonly ILogger<GetPosts> _logger = logger;
+        private readonly ILogger<GetAllPosts> _logger = logger;
 
         // This function is triggered by an HTTP GET request to fetch a users posts
-        [Function("GetPosts")]
+        [Function("GetAllPosts")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
-            _logger.LogInformation("userId");
-            // Validate if essential data is present
-            if (!req.Query.TryGetValue("userId", out var userId))
-            {
-                return new BadRequestObjectResult("Missing User-ID");
-            }
-            _logger.LogInformation(userId);
 
             // Retrieve the database connection string from environment variables
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
@@ -52,14 +45,9 @@ namespace GoRideShare
                     };
                 }
 
-                // Use a parameterized query to fetch the post details
-                var query = "SELECT * FROM posts WHERE poster_id = @Poster_id";
-
-                 // Use parameterized query to prevent SQL injection
+                var query = "SELECT * FROM posts";
                 using (var command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@Poster_id", userId);
-
                     try
                     {
                         using (var reader = await command.ExecuteReaderAsync())
@@ -67,21 +55,28 @@ namespace GoRideShare
                             var posts = new List<object>();
                             while (await reader.ReadAsync())
                             {
-                                var post = new PostDetails
+                                try{
+                                    var post = new PostDetails
+                                    {
+                                        PostId          = reader.GetGuid(  reader.GetOrdinal("post_id")),
+                                        PosterId        = reader.GetGuid(  reader.GetOrdinal("poster_id")),
+                                        Name            = reader.GetString(reader.GetOrdinal("name")),
+                                        Description     = reader.GetString(reader.GetOrdinal("description")),
+                                        DepartureDate   = reader.GetString(reader.GetOrdinal("departure_date")),
+                                        OriginLat       = reader.GetFloat( reader.GetOrdinal("origin_lat")),
+                                        OriginLng       = reader.GetFloat( reader.GetOrdinal("origin_lng")),
+                                        DestinationLat  = reader.GetFloat( reader.GetOrdinal("destination_lat")),
+                                        DestinationLng  = reader.GetFloat( reader.GetOrdinal("destination_lng")),
+                                        Price           = reader.GetFloat( reader.GetOrdinal("price")),
+                                        SeatsAvailable  = reader.GetInt32( reader.GetOrdinal("seats_available"))
+                                    };
+                                    posts.Add(post);
+                                } 
+                                catch (Exception)
                                 {
-                                    PostId = reader["post_id"].ToString(),
-                                    PosterId = reader["poster_id"].ToString(),
-                                    Name = reader["name"].ToString(),
-                                    Description = reader["description"].ToString(),
-                                    DepartureDate = reader["departure_date"].ToString(),
-                                    OriginLat = reader.GetFloat(reader.GetOrdinal("origin_lat")),
-                                    OriginLng = reader.GetFloat(reader.GetOrdinal("origin_lng")),
-                                    DestinationLat = reader.GetFloat(reader.GetOrdinal("destination_lat")),
-                                    DestinationLng = reader.GetFloat(reader.GetOrdinal("destination_lng")),
-                                    Price = reader.GetFloat(reader.GetOrdinal("price")),
-                                    SeatsAvailable = reader.GetInt32(reader.GetOrdinal("seats_available"))
-                                };
-                                posts.Add(post);
+                                    //Shouldn't be possible, but invalid database entries can cause it.
+                                    _logger.LogWarning($"Invalid post in DB"); 
+                                }
                             }
                             _logger.LogInformation("Posts retrieved successfully.");
                             return new OkObjectResult(posts);
@@ -92,6 +87,12 @@ namespace GoRideShare
                         // Log the error if the query fails and return a 400 Bad Request response
                         _logger.LogError("Database error: " + ex.Message);
                         return new BadRequestObjectResult("Error fetching posts from the database: " + ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the error if the query fails and return a 400 Bad Request response
+                        _logger.LogError("An Unexpected Error Occured: " + ex.Message);
+                        return new BadRequestObjectResult("An Error Occured: " + ex.Message);
                     }
                 }
             }
