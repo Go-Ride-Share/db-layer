@@ -32,6 +32,10 @@ namespace GoRideShare.messages
             {
                 return (true, "contents cannot be empty");
             }
+            if (Contents.Length > 500)
+            {
+                return (true, "Message Contents is too large");
+            }
             if (TimeStamp == DateTime.MinValue || TimeStamp > DateTime.Now) // Check if the timestamp is in the future or invalid
             {
                 return (true, "timeStamp is invalid");

@@ -7,7 +7,7 @@ using MySql.Data.MySqlClient;
 
 namespace GoRideShare.posts
 {
-    // This class handles making a new Post
+    // This class handles searching for a Post
     public class FindPost(ILogger<FindPost> logger)
     {
         private readonly ILogger<FindPost> _logger = logger;
@@ -16,22 +16,19 @@ namespace GoRideShare.posts
         [Function("FindPost")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
-            // Read the request body to get the post details
+            // Read the request body to get the 'Search Criteria'
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            PostDetails? newPost;
+            SearchCriteria? searchCriteria;
             try
             {
-                newPost = JsonSerializer.Deserialize<PostDetails>(requestBody);
+                searchCriteria = JsonSerializer.Deserialize< SearchCriteria>(requestBody);
 
-                if (newPost != null) {
-                    var (invalid, errorMessage) = newPost.validate();
+                if (searchCriteria != null) {
+                    var (invalid, errorMessage) = searchCriteria.validate();
                     if (invalid)
                     {
-                        _logger.LogError($"PostDetails are not valid: {errorMessage}");
+                        _logger.LogError($"Search Criteria are not valid: {errorMessage}");
                         return new BadRequestObjectResult(errorMessage);
-                    }
-                    if (newPost.PostId != null) {
-                        _logger.LogWarning($"PostID was present in request body; Ignoring PostID");
                     }
                 } else {
                     _logger.LogError("Input was null");
@@ -41,7 +38,7 @@ namespace GoRideShare.posts
             catch (JsonException ex)
             {
                 _logger.LogError($"JSON deserialization failed: {ex.Message}");
-                return new BadRequestObjectResult("Incomplete Post data.");
+                return new BadRequestObjectResult("Incomplete Search Criteria.");
             }
             _logger.LogInformation($"Raw Request Body: {requestBody}");
 
@@ -49,58 +46,79 @@ namespace GoRideShare.posts
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
             using (var connection = new MySqlConnection(connectionString))
             {
-                // Validate the connection string before trying to open the connection
-                if (string.IsNullOrWhiteSpace(connectionString))
+                var (error, message) = await Utilities.ValidateConnection(connectionString, connection);
+                if (error)
                 {
-                    _logger.LogError("Invalid connection string.");
+                    _logger.LogError(message);
                     return new StatusCodeResult(StatusCodes.Status500InternalServerError);
                 }
 
-                try
-                {
-                    // open the connection with the database
-                    await connection.OpenAsync();
-                }
-                catch (MySqlException ex)
-                {
-                    // Log the error and return an appropriate response
-                    _logger.LogError($"Failed to open database connection: {ex.Message}");
-                    return new StatusCodeResult(StatusCodes.Status500InternalServerError);
-                }
+                // Use a parameterized query to fetch the posts
+                var query = """
+                    SELECT post_id, poster_id, name, description, price,  origin_name, origin_lat, origin_lng, destination_name, destination_lat, destination_lng, departure_date, price, seats_available, seats_taken,
+                        ST_Distance(origin, POINT(@start_lat, @start_lng)) + ST_Distance(destination, POINT(@end_lat, @end_lng)) AS distance
+                    FROM `go-ride-share`.posts
+                    WHERE (ST_Distance(origin, POINT(@start_lat, @start_lng)) + ST_Distance(destination, POINT(@end_lat, @end_lng))) < 0.15
+                    ORDER BY distance ASC
+                    LIMIT 10;
+                """;
 
-                // Generate a new UUID for the new post
-                string postId = Guid.NewGuid().ToString();
-
-                // Use a parameterized query to insert the post details
-                var query = "INSERT INTO posts (post_id, poster_id, name, origin_lat, origin_lng, destination_lat, destination_lng, description, seats_available, departure_date, price) " +
-                            "VALUES (@Post_id, @Poster_id, @Name, @Origin_lat, @Origin_lng, @Destination_lat, @Destination_lng, @Description, @Seats_available, @Departure_date,@Price)";
-
-                 // Use parameterized query to prevent SQL injection
+                // Use parameterized query to reduce SQL injection
                 using (var command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@Post_id",         postId);
-                    command.Parameters.AddWithValue("@Poster_id",       newPost.PosterId);
-                    command.Parameters.AddWithValue("@Name",            newPost.Name);
-                    command.Parameters.AddWithValue("@Origin_lat",      newPost.OriginLat);
-                    command.Parameters.AddWithValue("@Origin_lng",      newPost.OriginLng);
-                    command.Parameters.AddWithValue("@Destination_lat", newPost.DestinationLat);
-                    command.Parameters.AddWithValue("@Destination_lng", newPost.DestinationLng);
-                    command.Parameters.AddWithValue("@Description",     newPost.Description);
-                    command.Parameters.AddWithValue("@Seats_available", newPost.SeatsAvailable);
-                    command.Parameters.AddWithValue("@Departure_date",  newPost.DepartureDate);
-                    command.Parameters.AddWithValue("@Price",           newPost.Price);
+                    command.Parameters.AddWithValue("@start_lat",    searchCriteria.OriginLat);
+                    command.Parameters.AddWithValue("@start_lng",    searchCriteria.OriginLng);
+                    command.Parameters.AddWithValue("@end_lat",      searchCriteria.DestinationLat);
+                    command.Parameters.AddWithValue("@end_lng",      searchCriteria.DestinationLng);
 
                     try
                     {
-                        await command.ExecuteNonQueryAsync();
-                        _logger.LogInformation("Posted successfully.");
-                        return new OkObjectResult(new { Id = postId });
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var posts = new List<object>();
+                            while (await reader.ReadAsync())
+                            {
+                                try{
+                                    var post = new PostDetails
+                                    {
+                                        PostId           = reader.GetGuid(  reader.GetOrdinal("post_id")),
+                                        PosterId         = reader.GetGuid(  reader.GetOrdinal("poster_id")),
+                                        Name             = reader.GetString(reader.GetOrdinal("name")),
+                                        Description      = reader.GetString(reader.GetOrdinal("description")),
+                                        DepartureDate    = reader.GetString(reader.GetOrdinal("departure_date")),
+                                        OriginName       = reader.GetString(reader.GetOrdinal("origin_name")),
+                                        OriginLat        = reader.GetFloat( reader.GetOrdinal("origin_lat")),
+                                        OriginLng        = reader.GetFloat( reader.GetOrdinal("origin_lng")),
+                                        DestinationName  = reader.GetString(reader.GetOrdinal("destination_name")),
+                                        DestinationLat   = reader.GetFloat( reader.GetOrdinal("destination_lat")),
+                                        DestinationLng   = reader.GetFloat( reader.GetOrdinal("destination_lng")),
+                                        Price            = reader.GetFloat( reader.GetOrdinal("price")),
+                                        SeatsAvailable   = reader.GetInt32( reader.GetOrdinal("seats_available")),
+                                        SeatsTaken       = reader.GetInt32( reader.GetOrdinal("seats_taken")),
+                                    };
+                                    posts.Add(post);
+                                } 
+                                catch (Exception)
+                                {
+                                    //Shouldn't be possible, but invalid database entries can cause it.
+                                    _logger.LogWarning($"Invalid post in DB"); 
+                                }
+                            }
+                            _logger.LogInformation("Posts retrieved successfully.");
+                            return new OkObjectResult(posts);
+                        }
                     }
                     catch (MySqlException ex)
                     {
                         // Log the error if the query fails and return a 400 Bad Request response
                         _logger.LogError("Database error: " + ex.Message);
-                        return new BadRequestObjectResult("Error inserting post into the database: " + ex.Message);
+                        return new BadRequestObjectResult("Error fetching posts from the database: " + ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the error if the query fails and return a 400 Bad Request response
+                        _logger.LogError("An Unexpected Error Occured: " + ex.Message);
+                        return new BadRequestObjectResult("An Error Occured: " + ex.Message);
                     }
                 }
             }
