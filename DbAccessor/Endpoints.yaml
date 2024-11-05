@@ -196,7 +196,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/MessageObject'
+                  $ref: '#/components/schemas/ConversationResponse'
         '400':
           description: Unsuccessful
           content:
@@ -209,7 +209,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerErrorResponse'
-  /api/PollConversation/{conversationId}:
+  /api/PollConversation:
     get:
       summary: Retrieve limited number of messages for a given conversation ID
       operationId: PollConversation
@@ -217,7 +217,7 @@ paths:
         - Messages
       parameters:
         - name: conversationId
-          in: path
+          in: query
           description: The ID of the conversation you want to query
           required: true
           schema:
@@ -248,7 +248,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/MessageObject'
+                  $ref: '#/components/schemas/ConversationResponse'
         '400':
           description: Unsuccessful
           content:
@@ -354,7 +354,15 @@ components:
       properties:
         error:
           type: string      
-          default: "Incomplete post data" 
+          default: "<Detailed error message>" 
+    ServerErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string      
+          default: "<Detailed error message>"
     User:
       type: object
       required:
@@ -452,3 +460,19 @@ components:
         timeStamp:
           type: string
           example: "2021-03-01T00:00:00Z"
+    MessageObject:
+      type: object
+      required:
+        - senderId
+        - contents
+        - timeStamp
+      properties:
+        userId:
+          type: string
+          example: "aaaaaaaa-aaaaa-aaaa"
+        contents:
+          type: string
+          example: "Hello, is this ride available?"
+        timeStamp:
+          type: string
+          example: "2021-03-01T00:00:00Z (IN ISO 8601 FORMAT)"

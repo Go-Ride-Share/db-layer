@@ -23,32 +23,7 @@ namespace GoRideShare
             {
                 return new BadRequestObjectResult("ERROR: Invalid X-User-ID Header: Not a Guid");
             }
-
             return null; // All headers are valid
-        }
-
-        internal static async Task<(bool error, string response)> MakeHttpGetRequest(Guid xUserId, string endpoint)
-        {
-            // Create a new HttpClient instance
-            using (var client = new HttpClient())
-            {
-            // Create a new HttpRequestMessage instance
-            using (var request = new HttpRequestMessage(HttpMethod.Get, endpoint))
-            {
-                // Add the X-User-ID header to the request
-                request.Headers.Add("X-User-ID", xUserId.ToString());
-
-                // Send the request and get the response
-                var response = await client.SendAsync(request);
-
-                // if its successful, then we know its 200, otherwise 404
-                if (response.IsSuccessStatusCode) {
-                    return (false, await response.Content.ReadAsStringAsync());
-                } else {
-                    return (true, response.StatusCode.ToString());
-                }
-            }
-            }
         }
     }
 }
