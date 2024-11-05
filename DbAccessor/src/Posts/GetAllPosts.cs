@@ -4,7 +4,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
-namespace GoRideShare
+namespace GoRideShare.posts
 {
     // This class handles making a new Post
     public class GetAllPosts(ILogger<GetAllPosts> logger)

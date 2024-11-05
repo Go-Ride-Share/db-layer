@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using System.Text.Json;
 
-namespace GoRideShare
+namespace GoRideShare.users
 {
     public class EditUser(ILogger<EditUser> logger)
     {
@@ -14,10 +14,12 @@ namespace GoRideShare
         [Function("EditUser")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
-            // Read the user ID from the headers
-            if (!req.Headers.TryGetValue("X-User-ID", out var userId))
+            // If validation result is not null, return the bad request result
+            var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
+            if (validationResult != null)
             {
-                return new BadRequestObjectResult("Missing User-ID header.");
+                _logger.LogError("Invalid Headers");
+                return validationResult;
             }
 
             // Retrieve the database connection string from environment variables

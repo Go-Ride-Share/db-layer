@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -6,7 +5,7 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using Microsoft.Azure.Functions.Worker;
 
-namespace GoRideShare
+namespace GoRideShare.messages
 {
     public class GetAllConversations
     {

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
-namespace GoRideShare
+namespace GoRideShare.messages
 {
     public static class UserDB
     {

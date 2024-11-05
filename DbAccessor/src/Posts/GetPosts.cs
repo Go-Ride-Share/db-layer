@@ -1,11 +1,10 @@
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
-namespace GoRideShare
+namespace GoRideShare.posts
 {
     // This class handles making a new Post
     public class GetPosts(ILogger<GetPosts> logger)
@@ -16,21 +15,13 @@ namespace GoRideShare
         [Function("GetPosts")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
-            // Validate if essential data is present
-            if (!req.Query.TryGetValue("userId", out var userId))
+            // If validation result is not null, return the bad request result
+            var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
+            if (validationResult != null)
             {
-                return new BadRequestObjectResult("Missing User-ID");
+                _logger.LogError("Invalid Headers");
+                return validationResult;
             }
-            try
-            {
-                // Validate it is a valid GUID
-                userId = Guid.Parse(userId.ToString()).ToString();
-            }
-            catch (FormatException)
-            {
-                return new BadRequestObjectResult("ERROR: Invalid X-User-ID Header: Not a Guid");
-            }
-            _logger.LogInformation($"UserId from Query: {userId}");
 
             // Retrieve the database connection string from environment variables
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");

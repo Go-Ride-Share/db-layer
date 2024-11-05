@@ -4,7 +4,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
-namespace GoRideShare
+namespace GoRideShare.users
 {
     public class GetUser(ILogger<GetUser> logger)
     {
@@ -13,12 +13,14 @@ namespace GoRideShare
         [Function("GetUser")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
-            // Read the user ID from the headers
-            if (!req.Headers.TryGetValue("X-User-ID", out var userId))
+            // If validation result is not null, return the bad request result
+            var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
+            if (validationResult != null)
             {
-                return new BadRequestObjectResult("Missing User-ID or Db-token header.");
+                _logger.LogError("Invalid Headers");
+                return validationResult;
             }
-
+            
             // Retrieve the database connection string from environment variables
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
             using (var connection = new MySqlConnection(connectionString))

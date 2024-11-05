@@ -6,7 +6,7 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using Microsoft.Azure.Functions.Worker;
 
-namespace GoRideShare
+namespace GoRideShare.messages
 {
     public class PostMessage(ILogger<PostMessage> logger)
     {

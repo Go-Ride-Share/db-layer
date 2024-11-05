@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using System.Text.Json;
 
-namespace GoRideShare
+namespace GoRideShare.users
 {
     // This class handles login credential verification
     public class VerifyLoginCredentials(ILogger<VerifyLoginCredentials> logger)

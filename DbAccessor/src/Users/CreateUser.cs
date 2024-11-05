@@ -5,12 +5,12 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
-namespace GoRideShare
+namespace GoRideShare.users
 {
     // This class handles creating a new user account
-    public class CreateAccount(ILogger<CreateAccount> logger)
+    public class CreateUser(ILogger<CreateUser> logger)
     {
-        private readonly ILogger<CreateAccount> _logger = logger;
+        private readonly ILogger<CreateUser> _logger = logger;
 
         // Returns UserId if registration is successful, error otherwise.
         [Function("CreateUser")]

@@ -8,13 +8,13 @@ using MySql.Data.MySqlClient;
 namespace GoRideShare.posts
 {
     // This class handles making a new Post
-    public class UpdatePost(ILogger<UpdatePost> logger)
+    public class FindPost(ILogger<FindPost> logger)
     {
-        private readonly ILogger<UpdatePost> _logger = logger;
+        private readonly ILogger<FindPost> _logger = logger;
 
-        // This function is triggered by an HTTP PATCH request to create a new post
-        [Function("UpdatePost")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "patch")] HttpRequest req)
+        // This function is triggered by an HTTP GET request to create a new post
+        [Function("FindPost")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
             // Read the request body to get the post details
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -30,9 +30,8 @@ namespace GoRideShare.posts
                         _logger.LogError($"PostDetails are not valid: {errorMessage}");
                         return new BadRequestObjectResult(errorMessage);
                     }
-                    if (newPost.PostId == null) {
-                        _logger.LogError($"PostID is missing");
-                        return new BadRequestObjectResult("PostID is missing");
+                    if (newPost.PostId != null) {
+                        _logger.LogWarning($"PostID was present in request body; Ignoring PostID");
                     }
                 } else {
                     _logger.LogError("Input was null");
@@ -69,40 +68,39 @@ namespace GoRideShare.posts
                     return new StatusCodeResult(StatusCodes.Status500InternalServerError);
                 }
 
-                var query = """
-                    UPDATE posts SET 
-                    origin_lat = @Origin_lat,
-                    origin_lng = @Origin_lng,
-                    destination_lat = @Destination_lat,
-                    destination_lng = @Destination_lng,
-                    description = @Description,
-                    seats_available = @Seats_available
-                    WHERE post_id = @Post_id AND poster_id = @Poster_id
-                """;
+                // Generate a new UUID for the new post
+                string postId = Guid.NewGuid().ToString();
+
+                // Use a parameterized query to insert the post details
+                var query = "INSERT INTO posts (post_id, poster_id, name, origin_lat, origin_lng, destination_lat, destination_lng, description, seats_available, departure_date, price) " +
+                            "VALUES (@Post_id, @Poster_id, @Name, @Origin_lat, @Origin_lng, @Destination_lat, @Destination_lng, @Description, @Seats_available, @Departure_date,@Price)";
 
                  // Use parameterized query to prevent SQL injection
                 using (var command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@Post_id",         newPost.PostId);
+                    command.Parameters.AddWithValue("@Post_id",         postId);
                     command.Parameters.AddWithValue("@Poster_id",       newPost.PosterId);
+                    command.Parameters.AddWithValue("@Name",            newPost.Name);
                     command.Parameters.AddWithValue("@Origin_lat",      newPost.OriginLat);
                     command.Parameters.AddWithValue("@Origin_lng",      newPost.OriginLng);
                     command.Parameters.AddWithValue("@Destination_lat", newPost.DestinationLat);
                     command.Parameters.AddWithValue("@Destination_lng", newPost.DestinationLng);
                     command.Parameters.AddWithValue("@Description",     newPost.Description);
                     command.Parameters.AddWithValue("@Seats_available", newPost.SeatsAvailable);
+                    command.Parameters.AddWithValue("@Departure_date",  newPost.DepartureDate);
+                    command.Parameters.AddWithValue("@Price",           newPost.Price);
 
                     try
                     {
                         await command.ExecuteNonQueryAsync();
-                        _logger.LogInformation("Post Updated successfully.");
-                        return new OkObjectResult(new { Id = newPost.PostId });
+                        _logger.LogInformation("Posted successfully.");
+                        return new OkObjectResult(new { Id = postId });
                     }
                     catch (MySqlException ex)
                     {
                         // Log the error if the query fails and return a 400 Bad Request response
                         _logger.LogError("Database error: " + ex.Message);
-                        return new BadRequestObjectResult("Error Updaing post: " + ex.Message);
+                        return new BadRequestObjectResult("Error inserting post into the database: " + ex.Message);
                     }
                 }
             }
