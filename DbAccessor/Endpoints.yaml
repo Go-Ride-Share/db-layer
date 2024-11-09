@@ -5,7 +5,9 @@ info:
   description: <h3> Internal DB API for Post Operations
 
 paths:
-  /api/createPost:
+
+# ------ Users ------ 
+  /api/posts:
     post:
       summary: Save a completed post to the database
       operationId: createPost
@@ -30,32 +32,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnsuccessfulResponse"  
-  /api/updatePost:
-      patch:
-        summary: Save a completed post to the database
-        operationId: updatePost
-        tags:
-          - Posts
-        requestBody:
-          required: true
-          content:  
+    get:
+      summary: Get all posts from the database
+      operationId: getAllPosts
+      tags:
+        - Posts
+      responses:   
+        '200':
+          description:  Success
+          content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PostObject'   
-        responses:
-          '200':
-            description:  Success
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/SuccessfulPostResponse"       
-          '400':
-            description: Unsuccessful
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/UnsuccessfulResponse"                    
-  /api/getPosts/{user_id}:
+                $ref: "#/components/schemas/PostList"          
+        '400':
+          description: Unsuccessful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"                   
+  /api/posts/{user_id}:
     get:
       summary: Get a users posts from the database
       operationId: getPosts
@@ -82,21 +77,72 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnsuccessfulResponse"                            
-  /api/getUser:
+  /api/posts/{post_id}:
+    patch:
+        summary: Save a completed post to the database
+        operationId: updatePost
+        tags:
+          - Posts
+        parameters:
+          - name: post_id
+            in: path
+            description: The ID of the user whos posts you want to query
+            required: true
+            schema:
+              type: string
+              format: string            
+        requestBody:
+          required: true
+          content:  
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostObject'   
+        responses:
+          '200':
+            description:  Success
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/SuccessfulPostResponse"       
+          '400':
+            description: Unsuccessful
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/UnsuccessfulResponse"                                    
+
+# ------ Users ------ 
+  /api/users:
+    post:
+      summary: Create a new User
+      operationId: CreateUser
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:  
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegistrationInfo"
+      responses:   
+        '200':
+          description:  Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAccountResponse"         
+  /api/users/{user_id}:
     get:
       summary: Queries a users Profile from the database
       operationId: getUser
       parameters:
-        - name: X-User-ID
-          in: header
+        - name: user_id
+          in: path
+          description: The ID of the user whos posts you want to query
           required: true
           schema:
             type: string
-        - name: X-Db-Token
-          in: header
-          required: true
-          schema:
-            type: string  
+            format: string   
       tags:
         - Users
       responses:   
@@ -106,50 +152,40 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"   
-  /api/CreateAccount:
-    post:
-      summary: Create a new Account
-      operationId: CreateUser
-      tags:
-        - Users
-      requestBody:
-        required: true
-        content:  
-          application/json:
-            schema:
-              $ref: "#/components/schemas/User"
-      responses:   
-        '200':
-          description:  Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateAccountResponse"         
-  /api/EditUser:
-    post:
+    patch:
       summary: Edit a user
       operationId: EditUser
       tags:
         - Users
+      parameters:        
+        - name: user_id
+          in: path
+          description: The ID of the user whos posts you want to query
+          required: true
+          schema:
+            type: string
+            format: string           
       requestBody:
         required: true
         content:  
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: "#/components/schemas/UserRegistrationInfo"
       responses:   
         '200':
           description:  Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateAccountResponse"      
-  /api/CreateConversation:
+                $ref: "#/components/schemas/CreateAccountResponse"     
+
+# ------ Conversations ------ 
+  /api/conversations:
     post:
       summary: Create a new conversation between 2 users
       operationId: CreateConversation
       tags:
-        - Messages
+        - Conversations
       requestBody:
         required: true
         content:
@@ -175,12 +211,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerErrorResponse'
-  /api/GetAllConversations:
+  /api/conversations/{conversation_id}:
     get:
       summary: Retrieve a snapshot of conversations for the user specified by "X-User-ID" in the headers. Each conversation will include only the latest message.     
       operationId: GetAllConversations
       tags:
-        - Messages
+        - Conversations
       parameters:
         - name: X-User-ID
           in: header
@@ -188,6 +224,13 @@ paths:
           required: true
           schema:
             type: string
+        - name: conversation_id
+          in: path
+          description: The ID of the user whos posts you want to query
+          required: true
+          schema:
+            type: string
+            format: string               
       responses:
         '200':
           description: Success
@@ -209,13 +252,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerErrorResponse'
-  /api/PollConversation/{conversationId}:
+
+# ------ Messages ------     
+  /api/messages:
+    post:
+      summary: Post a message to a conversation
+      operationId: PostMessage
+      tags:
+        - Messages
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostMessageRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json: 
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: The ID of the Conversation in which Message was added
+                    type: string
+                    example: "5a3f9c5b9d8e8d001f123456"
+        '400':
+          description: Unsuccessful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnsuccessfulResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorResponse'
+  /api/messages/{conversationId}:
     get:
       summary: Retrieve limited number of messages for a given conversation ID
       operationId: PollConversation
       tags:
         - Messages
       parameters:
+        - name: X-User-ID
+          in: header
+          description: Your User ID
+          required: true
+          schema:
+            type: string
         - name: conversationId
           in: path
           description: The ID of the conversation you want to query
@@ -234,12 +321,6 @@ paths:
           required: false
           schema:
             type: integer
-        - name: X-User-ID
-          in: header
-          description: The ID of the user whose messages you want to query
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: Success
@@ -261,42 +342,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerErrorResponse'
-  /api/PostMessage:
-    post:
-      summary: Post a message to a conversation
-      operationId: PostMessage
-      tags:
-        - Messages
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PostMessageRequest'
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    description: The ID of the Conversation in which Message was added
-                    type: string
-                    example: "cccccccc-ccccc-cccc"
-        '400':
-          description: Unsuccessful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UnsuccessfulResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServerErrorResponse'
+
+
 components:
   schemas:
     PostObject:
@@ -358,6 +405,38 @@ components:
     User:
       type: object
       required:
+        - user_id
+        - email
+        - password
+        - name
+        - bio
+        - phone
+        - photo
+      properties:
+        user_id:
+          type: string      
+          example: "123e4567-e89b-12d3-a456-426614174000" 
+        email:
+          type: string      
+          example: "test@email.com" 
+        password:
+          type: string      
+          example: "testPassword"     
+        name:
+          type: string      
+          example: "testName"     
+        bio:
+          type: string      
+          example: "testBio"            
+        phone:
+          type: string      
+          example: "4312245323"          
+        photo:
+          type: string      
+          example: "testPhotoUrl"           
+    UserRegistrationInfo:
+      type: object
+      required:
         - email
         - password
         - name
@@ -382,7 +461,7 @@ components:
           example: "4312245323"          
         photo:
           type: string      
-          example: "testPhotoUrl"   
+          example: "testPhotoUrl" 
     CreateAccountResponse:
       type: object
       required:
@@ -399,7 +478,7 @@ components:
       properties:
         userId:
           type: string
-          example: "aaaaaaaa-aaaaa-aaaa"
+          example: "123e4567-e89b-12d3-a456-426614174000"
         contents:
           type: string
           example: "Hello, is this ride available?"
@@ -415,13 +494,13 @@ components:
       properties:
         conversation_id:
           type: string
-          example: "cccccccc-ccccc-cccc" 
+          example: "5a3f9c5b9d8e8d001f123456" 
         user:
           type: object
           properties:
             userId:
               type: string
-              example: "aaaaaaaa-aaaaa-aaaa"
+              example: "123e4567-e89b-12d3-a456-426614174000"
             name:
               type: string
               example: "John Smith"
@@ -442,13 +521,38 @@ components:
       properties:
         conversationId:
           type: string
-          example: "cccccccc-ccccc-cccc"
+          example: "5a3f9c5b9d8e8d001f123456"
         userId:
           type: string
-          example: "aaaaaaaa-aaaaa-aaaa"
+          example: "123e4567-e89b-12d3-a456-426614174000"
         contents:
           type: string
           example: "Hello, is this ride available?"
         timeStamp:
           type: string
           example: "2021-03-01T00:00:00Z"
+    ServerErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string      
+          default: "Incomplete post data" 
+    MessageObject:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string      
+          default: "Incomplete post data" 
+          
+          
+          
+          
+          
+          
+          
+          
+          
