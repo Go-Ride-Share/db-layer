@@ -8,10 +8,10 @@ using Microsoft.Azure.Functions.Worker;
 
 namespace GoRideShare.messages
 {
-    public class PostMessage(ILogger<PostMessage> logger)
+    public class PostMessages(ILogger<PostMessages> logger)
     {
 
-        private readonly ILogger<PostMessage> _logger = logger;
+        private readonly ILogger<PostMessages> _logger = logger;
         // initialize the MongoDB client lazily. This is a best practice for serverless functions because it is not efficient to establish Mongo connections on every execution of our Azure Function
         public static Lazy<MongoClient> lazyClient = new Lazy<MongoClient>(InitializeMongoClient);
         public static MongoClient client = lazyClient.Value;
@@ -21,8 +21,9 @@ namespace GoRideShare.messages
             return new MongoClient(Environment.GetEnvironmentVariable("MONGODB_ATLAS_URI"));
         }
 
-        [Function("PostMessage")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+        //[Function("Messages")]
+        [Function("MessagesPost")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route ="Messages")] HttpRequest req)
         {
             // If validation result is not null, return the bad request result
             var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
@@ -34,10 +35,10 @@ namespace GoRideShare.messages
 
             // Read the request body to get the user's registration information
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            PostMessageRequest? incomingRequest;
+            MessageRequest? incomingRequest;
             try
             {
-                incomingRequest = JsonSerializer.Deserialize<PostMessageRequest>(requestBody);
+                incomingRequest = JsonSerializer.Deserialize<MessageRequest>(requestBody);
 
                 if (incomingRequest != null) {
                     var (invalid, errorMessage) = incomingRequest.validate();
@@ -61,9 +62,9 @@ namespace GoRideShare.messages
             // Create a new message object
             Message newMessage = new Message
             (
-                incomingRequest.UserId, 
-                incomingRequest.Contents, 
-                incomingRequest.TimeStamp
+                senderId: userId, 
+                contents: incomingRequest.Contents, 
+                timeStamp: incomingRequest.TimeStamp
             );
 
             // Get the database collection and insert the new conversation

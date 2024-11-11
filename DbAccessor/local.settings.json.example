@@ -1,0 +1,16 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "DB_URL": "",
+    "DB_CONNECTION_STRING": "",
+    "AzureWebJobsStorage": "",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "SQL_CONNECTION_STRING": "",
+    "MONGODB_ATLAS_URI": ""
+  },
+  "Host": {
+    "CORS": "http://localhost:3000",
+    "CORS_SUPPORT_CREDENTIALS": true
+  }
+}
+

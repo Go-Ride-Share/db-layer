@@ -10,9 +10,10 @@ namespace GoRideShare.users
     {
         private readonly ILogger<GetUser> _logger = logger;
 
-        [Function("GetUser")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+        [Function("UserGet")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Users/{user_id}")] HttpRequest req, Guid userId)
         {
+            /*
             // If validation result is not null, return the bad request result
             var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
             if (validationResult != null)
@@ -20,6 +21,7 @@ namespace GoRideShare.users
                 _logger.LogError("Invalid Headers");
                 return validationResult;
             }
+            */
             
             // Retrieve the database connection string from environment variables
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");

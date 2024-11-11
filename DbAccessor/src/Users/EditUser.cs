@@ -11,8 +11,8 @@ namespace GoRideShare.users
     {
         private readonly ILogger<EditUser> _logger = logger;
 
-        [Function("EditUser")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+        [Function("UserEdit")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "Users")] HttpRequest req)
         {
             // If validation result is not null, return the bad request result
             var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);

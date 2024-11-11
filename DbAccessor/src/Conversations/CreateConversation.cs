@@ -26,8 +26,8 @@ namespace GoRideShare.messages
             _logger = logger;
         }
         
-        [Function("CreateConversation")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+        [Function("ConversationsPost")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route ="Conversations")] HttpRequest req)
         {
             // If validation result is not null, return the bad request result
             var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
@@ -64,17 +64,17 @@ namespace GoRideShare.messages
                 return new BadRequestObjectResult("Incomplete Conversation Request data.");
             }
 
-            if (convoRequest.UserId == userId)
+            if (convoRequest.RecipientId == userId)
             {
                 _logger.LogError("You cannot start a conversation with yourself");
                 return new BadRequestObjectResult("You cannot start a conversation with yourself"); 
             }
 
-            User? otherUser;
+            User? recipient;
             try
             {
-                otherUser = await UserDB.FetchUser(convoRequest.UserId);
-                if ( otherUser == null) {
+                recipient = await UserDB.FetchUser(convoRequest.RecipientId);
+                if ( recipient == null) {
                     _logger.LogError("Failed to get user details from DB");
                     return new ObjectResult("Failed to get user details from DB") { StatusCode = StatusCodes.Status500InternalServerError };
                 }
@@ -97,7 +97,7 @@ namespace GoRideShare.messages
             (
                 new List<Guid> 
                 {
-                    convoRequest.UserId,
+                    convoRequest.RecipientId,
                     userId
                 }, 
                 new List<Message> { newMessage }
@@ -114,7 +114,7 @@ namespace GoRideShare.messages
                 var responseObj = new ConversationResponse
                 (
                     newConversation.ConversationId, 
-                    otherUser, 
+                    recipient, 
                     new List<Message> {newMessage} 
                 );
 

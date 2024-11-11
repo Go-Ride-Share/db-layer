@@ -4,16 +4,12 @@ using MongoDB.Bson;
 
 namespace GoRideShare.messages
 {
-    public class PostMessageRequest
+    public class MessageRequest
     {
         [JsonRequired]
         [JsonPropertyName("conversationId")]
         public required string ConversationId { get; set; }
 
-        [JsonRequired]
-        [JsonPropertyName("userId")]
-        public required Guid UserId { get; set; }
-        
         [JsonRequired]
         [JsonPropertyName("contents")]
         public required string Contents { get; set; }
@@ -47,8 +43,8 @@ namespace GoRideShare.messages
     public class ConversationRequest
     {
         [JsonRequired]
-        [JsonPropertyName("userId")]
-        public required Guid UserId  { get; set; }
+        [JsonPropertyName("recipientId")]
+        public required Guid RecipientId  { get; set; }
         
         [JsonRequired]
         [JsonPropertyName("contents")]
@@ -157,42 +153,4 @@ namespace GoRideShare.messages
         }
     }
 
-    public class User
-    {          
-        [JsonPropertyName("userId")]
-        public Guid? UserId { get; set; }
-
-        [JsonRequired]
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
-
-        [JsonRequired]
-        [JsonPropertyName("photo")]
-        public string Photo  { get; set; }
-
-        public User
-        (
-            Guid userId,
-            string name,
-            string photo
-        )
-        {
-            UserId = userId;
-            Name = name;
-            Photo = photo;
-        }
-        
-        public (bool, string) validate()
-        {
-            if ( Name == "")
-            {
-                return (true, "name cannot be empty");
-            }
-            if ( Photo == "")
-            {
-                return (true, "photo cannot be empty");
-            }
-            return (false, "");
-        }
-    }
 }

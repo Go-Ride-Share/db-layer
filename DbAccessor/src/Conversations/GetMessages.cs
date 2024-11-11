@@ -7,10 +7,10 @@ using Microsoft.Azure.Functions.Worker;
 
 namespace GoRideShare.messages
 {
-    public class PollConversation
+    public class GetMessages
     {
 
-        private readonly ILogger<PollConversation> _logger;
+        private readonly ILogger<GetMessages> _logger;
 
         // initialize the MongoDB client lazily. This is a best practice for serverless functions because it is not efficient to establish Mongo connections on every execution of our Azure Function
         public static Lazy<MongoClient> lazyClient = new Lazy<MongoClient>(InitializeMongoClient);
@@ -21,13 +21,13 @@ namespace GoRideShare.messages
             return new MongoClient(Environment.GetEnvironmentVariable("MONGODB_ATLAS_URI"));
         }
 
-        public PollConversation(ILogger<PollConversation> logger)
+        public GetMessages(ILogger<GetMessages> logger)
         {
             _logger = logger;
         }
 
-        [Function("PollConversation")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+        [Function("MessagesGet")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route ="Messages")] HttpRequest req)
         {
             // If validation result is not null, return the bad request result
             var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);

@@ -13,8 +13,8 @@ namespace GoRideShare.users
         private readonly ILogger<CreateUser> _logger = logger;
 
         // Returns UserId if registration is successful, error otherwise.
-        [Function("CreateUser")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+        [Function("UserCreate")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "Users")] HttpRequest req)
         {
             // Read the request body to get the user's registration information
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();

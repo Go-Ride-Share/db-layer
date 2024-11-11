@@ -13,8 +13,8 @@ namespace GoRideShare.posts
         private readonly ILogger<FindPost> _logger = logger;
 
         // This function is triggered by an HTTP GET request to create a new post
-        [Function("FindPost")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+        [Function("PostsSearch")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Posts/Search")] HttpRequest req)
         {
             // Read the request body to get the 'Search Criteria'
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -79,7 +79,14 @@ namespace GoRideShare.posts
                             while (await reader.ReadAsync())
                             {
                                 try{
-                                    var post = new PostDetails
+                                    User poster = new User
+                                    {
+                                        UserId = reader.GetGuid(  reader.GetOrdinal("user_id")),
+                                        Name   = reader.GetString(reader.GetOrdinal("name")),
+                                        Photo  = reader.GetString(reader.GetOrdinal("photo")),
+                                    };
+
+                                    Post post = new Post
                                     {
                                         PostId           = reader.GetGuid(  reader.GetOrdinal("post_id")),
                                         PosterId         = reader.GetGuid(  reader.GetOrdinal("poster_id")),
@@ -95,6 +102,7 @@ namespace GoRideShare.posts
                                         Price            = reader.GetFloat( reader.GetOrdinal("price")),
                                         SeatsAvailable   = reader.GetInt32( reader.GetOrdinal("seats_available")),
                                         SeatsTaken       = reader.GetInt32( reader.GetOrdinal("seats_taken")),
+                                        Poster = poster
                                     };
                                     posts.Add(post);
                                 } 
