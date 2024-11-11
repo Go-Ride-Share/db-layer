@@ -46,6 +46,17 @@ paths:
       operationId: getAllPosts
       tags:
         - Posts
+      parameters:
+        - name: pageStart
+          in: query
+          description: The offset when querying posts from the table
+          schema:
+            type: integer      
+        - name: pageSize
+          in: query
+          description: The number of entries to return for pagination
+          schema:
+            type: integer            
       responses:   
         '200':
           description:  Success

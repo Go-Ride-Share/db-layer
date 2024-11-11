@@ -30,14 +30,18 @@ namespace GoRideShare.posts
             if (req.Query.TryGetValue("pageStart", out StringValues pageStartParam))
             {
                 if (!int.TryParse(pageStartParam[0], out pageStart))
+                {
                     _logger.LogError("Invalid pageStart query param");
-                    return new BadRequestObjectResult("ERROR: Invalid Query Parameter: User-ID");
+                    return new BadRequestObjectResult("ERROR: Invalid Query Parameter: pageStart");
+                }
             }
             if (req.Query.TryGetValue("pageSize", out StringValues pageSizeParam))
             {
-                if (!int.TryParse(pageSizeParam[0], out pageSize))
+                if (!int.TryParse(pageSizeParam[0], out pageSize)) 
+                {
                     _logger.LogError("Invalid pageSize query param");
-                    return new BadRequestObjectResult("ERROR: Invalid Query Parameter: User-ID");
+                    return new BadRequestObjectResult("ERROR: Invalid Query Parameter: pageSize");
+                }
             }
             _logger.LogInformation($"pageStart: {pageStart}");
             _logger.LogInformation($"pageSize: {pageSize}");

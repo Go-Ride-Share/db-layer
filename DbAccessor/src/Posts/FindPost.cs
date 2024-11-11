@@ -21,8 +21,7 @@ namespace GoRideShare.posts
             SearchCriteria? searchCriteria;
             try
             {
-                searchCriteria = JsonSerializer.Deserialize< SearchCriteria>(requestBody);
-
+                searchCriteria = JsonSerializer.Deserialize<SearchCriteria>(requestBody);
                 if (searchCriteria != null) {
                     var (invalid, errorMessage) = searchCriteria.validate();
                     if (invalid)

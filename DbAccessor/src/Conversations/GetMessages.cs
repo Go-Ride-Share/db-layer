@@ -27,7 +27,7 @@ namespace GoRideShare.messages
         }
 
         [Function("MessagesGet")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route ="Messages")] HttpRequest req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route ="Messages/{conversation_id}")] HttpRequest req, string conversation_id)
         {
             // If validation result is not null, return the bad request result
             var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
@@ -35,12 +35,6 @@ namespace GoRideShare.messages
             {
                 _logger.LogError("Invalid Headers");
                 return validationResult;
-            }
-
-            // Read the conversationId from the query params
-            if (!req.Query.TryGetValue("conversationId", out var conversationId))
-            {
-                return new BadRequestObjectResult("Missing the following query param: \'conversationId\'");
             }
             
             // Timestamp is an optional parameter to limit the response size
@@ -72,7 +66,7 @@ namespace GoRideShare.messages
 
             // Get all conversations where the user string is included in the list of userIDs
             BsonDocument filter = new BsonDocument{
-                { "_id", new ObjectId(conversationId) }
+                { "_id", new ObjectId(conversation_id) }
             };
 
             try
@@ -98,15 +92,13 @@ namespace GoRideShare.messages
                     return new ObjectResult($"ERROR: Failed to access the DB: {e.Message}") { StatusCode = StatusCodes.Status500InternalServerError };
                 }
 
-
                 // create a response object
                 var responseObj = new ConversationResponse
                 (
-                    conversation.ConversationId, 
+                    conversation_id, 
                     otherUser, 
                     conversation.Messages
                 );
-
 
                 return new OkObjectResult(responseObj);
             }

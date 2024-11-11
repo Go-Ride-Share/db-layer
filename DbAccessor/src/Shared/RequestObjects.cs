@@ -1,6 +1,4 @@
 using System.Text.Json.Serialization;
-using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
 
 namespace GoRideShare
 {
@@ -22,7 +20,7 @@ namespace GoRideShare
         (
             Guid userId,
             string name,
-            string photo
+            string? photo
         )
         {
             UserId = userId;
