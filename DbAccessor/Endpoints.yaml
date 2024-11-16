@@ -1,12 +1,12 @@
 openapi: "3.0.0"
 info:
-  version: 1.0.0
+  version: 1.2.0
   title: Go Ride Share DB Layer API
-  description: <h3> Internal DB API for Post Operations
+  description: <h2> Internal API for database operations
 
 paths:
 
-# ------ Users ------ 
+# ------ Posts ------ 
   /api/posts:
     post:
       summary: Save a completed post to the database
@@ -79,7 +79,7 @@ paths:
       parameters:
         - name: user_id
           in: path
-          description: The ID of the user whos posts you want to query
+          description: The ID of the user who's posts you want to query
           required: true
           schema:
             type: string
@@ -167,7 +167,7 @@ paths:
       parameters:
         - name: user_id
           in: path
-          description: The ID of the user whos posts you want to query
+          description: The ID of the user who's posts you want to query
           required: true
           schema:
             type: string
@@ -189,7 +189,7 @@ paths:
       parameters:        
         - name: user_id
           in: path
-          description: The ID of the user whos posts you want to query
+          description: The ID of the user who's posts you want to query
           required: true
           schema:
             type: string
@@ -323,7 +323,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MessageRequest'
+              $ref: '#/components/schemas/MessageObject'
       responses:
         '200':
           description: Success
@@ -418,8 +418,7 @@ components:
         name:
           type: string  
         originName:
-          type: string
-          format: float            
+          type: string           
         originLng:
           type: number
           format: float  
@@ -427,8 +426,7 @@ components:
           type: number
           format: float  
         destinationName:
-          type: string
-          format: float            
+          type: string       
         destinationLng:
           type: number
           format: float  
@@ -441,15 +439,50 @@ components:
           type: number
           format: float                 
         seatsAvailable:
-          type: number
-          format: float           
+          type: number        
     PostList:
-      type: object
-      properties:
-        post_id:
-          type: array
-          items:
-            type: object     
+      type: array
+      items:
+        type: object
+        properties:
+          postId:
+            type: string 
+          posterId:
+            type: string             
+          name:
+            type: string  
+          originName:
+            type: string          
+          originLng:
+            type: number
+            format: float  
+          originLat:
+            type: number
+            format: float  
+          destinationName:
+            type: string         
+          destinationLng:
+            type: number
+            format: float  
+          destinationLat:
+            type: number
+            format: float  
+          departureDate:
+            type: string  
+          price:
+            type: number
+            format: float                 
+          seatsAvailable:
+            type: number   
+          user:
+            type: object
+            properties:
+              userId:
+                type: string
+              name:
+                type: string
+              photo:
+                type: string
     SuccessfulPostResponse:
       type: object
       required:
@@ -464,7 +497,7 @@ components:
       properties:
         error:
           type: string      
-          default: "Incomplete post data" 
+          default: "ERROR MESSAGE" 
     User:
       type: object
       required:
@@ -574,7 +607,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MessageObject'
-    MessageRequest:
+    MessageObject:
       type: object
       required:
         - conversationId
@@ -597,15 +630,7 @@ components:
       properties:
         error:
           type: string      
-          default: "Incomplete post data" 
-    MessageObject:
-      type: object
-      required:
-        - error
-      properties:
-        error:
-          type: string      
-          default: "Incomplete post data" 
+          default: "ERROR MESSAGE" 
     LoginCredentials:
       type: object
       required:

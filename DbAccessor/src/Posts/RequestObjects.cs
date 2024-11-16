@@ -187,14 +187,10 @@ namespace GoRideShare.posts
     public class  SearchCriteria
     {
         [JsonRequired]
-        [JsonPropertyName("name")]
-        public string? Name { get; set; }
-
-        [JsonRequired]
         [JsonPropertyName("originLat")]
         public required float OriginLat { get; set; }
 
-        [JsonRequired]
+        [JsonRequired] 
         [JsonPropertyName("originLng")]
         public required float OriginLng { get; set; }
 
@@ -205,6 +201,14 @@ namespace GoRideShare.posts
         [JsonRequired]
         [JsonPropertyName("destinationLng")]
         public required float DestinationLng { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("pageStart")]
+        public required float PageStart { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("pageSize")]
+        public required float PageSize { get; set; }
 
         [JsonRequired]
         [JsonPropertyName("price")]
@@ -242,6 +246,14 @@ namespace GoRideShare.posts
             if ( 180 < DestinationLng || DestinationLng < -180 )
             {
                 return (true, "DestinationLng is Invalid");
+            }
+            if ( PageSize < 1 )
+            {
+                return (true, "PageSize is Invalid");
+            }
+            if ( PageStart < 0 )
+            {
+                return (true, "PageStart is Invalid");
             }
             
             return (false, "");

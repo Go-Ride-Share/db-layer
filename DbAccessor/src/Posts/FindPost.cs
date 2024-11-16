@@ -54,21 +54,27 @@ namespace GoRideShare.posts
 
                 // Use a parameterized query to fetch the posts
                 var query = """
-                    SELECT post_id, poster_id, name, description, price,  origin_name, origin_lat, origin_lng, destination_name, destination_lat, destination_lng, departure_date, price, seats_available, seats_taken,
-                        ST_Distance(origin, POINT(@start_lat, @start_lng)) + ST_Distance(destination, POINT(@end_lat, @end_lng)) AS distance
-                    FROM `go-ride-share`.posts
-                    WHERE (ST_Distance(origin, POINT(@start_lat, @start_lng)) + ST_Distance(destination, POINT(@end_lat, @end_lng))) < 0.15
-                    ORDER BY distance ASC
-                    LIMIT 10;
+                    SELECT *
+                    FROM (
+                        SELECT *,
+                            ST_Distance(origin, destination) AS org_distance,
+                            ST_Distance(origin, POINT(@start_lat, @start_lng)) + ST_Distance(POINT(@start_lat, @start_lng), POINT(@end_lat, @end_lng)) + ST_Distance(POINT(@end_lat, @end_lng), destination) AS total_distance
+                        FROM `go-ride-share`.posts
+                    ) as distance_query
+                    WHERE total_distance < 2 * org_distance
+                    ORDER BY org_distance - total_distance DESC
+                    LIMIT @Limit OFFSET @Offset;
                 """;
 
                 // Use parameterized query to reduce SQL injection
                 using (var command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@start_lat",    searchCriteria.OriginLat);
-                    command.Parameters.AddWithValue("@start_lng",    searchCriteria.OriginLng);
-                    command.Parameters.AddWithValue("@end_lat",      searchCriteria.DestinationLat);
-                    command.Parameters.AddWithValue("@end_lng",      searchCriteria.DestinationLng);
+                    command.Parameters.AddWithValue("@start_lat",   searchCriteria.OriginLat);
+                    command.Parameters.AddWithValue("@start_lng",   searchCriteria.OriginLng);
+                    command.Parameters.AddWithValue("@end_lat",     searchCriteria.DestinationLat);
+                    command.Parameters.AddWithValue("@end_lng",     searchCriteria.DestinationLng);
+                    command.Parameters.AddWithValue("@Limit",       searchCriteria.PageSize);
+                    command.Parameters.AddWithValue("@Offset",      searchCriteria.PageStart);
 
                     try
                     {
