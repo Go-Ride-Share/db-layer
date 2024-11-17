@@ -139,6 +139,32 @@ paths:
               application/json:
                 schema:
                   $ref: "#/components/schemas/UnsuccessfulResponse"                                    
+  /api/posts/search:
+    post:
+      summary: Get a users posts from the database
+      operationId: postSearch
+      tags:
+        - Posts
+      requestBody:
+        required: true
+        content:  
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchCriteria'   
+ 
+      responses:   
+        '200':
+          description:  Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostList"          
+        '400':
+          description: Unsuccessful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"                     
 
 # ------ Users ------ 
   /api/users:
@@ -643,3 +669,63 @@ components:
         password:
           type: string      
           example: "testPassword"     
+    SearchCriteria:
+      type: object
+      required:
+        - originLat
+        - originLng
+        - destinationLat
+        - destinationLng       
+        - departureDate
+      properties:
+        originLat:
+          type: number
+          format: float
+          example: "-15.7568"
+        originLng:
+          type: number
+          format: float
+          example: "45.4568" 
+        destinationLat:
+          type: number
+          format: float
+          example: "-15.4568"
+        destinationLng:
+          type: number
+          format: float
+          example: "45.9758"           
+        pageStart:
+          type: number
+          format: int
+          example: "5"           
+        pageSize:
+          type: number
+          format: int
+          example: "10"               
+        price:
+          type: number
+          format: float
+          example: "50.5"
+        departureDate:
+          type: string
+          example: "2024-11-04T06:00:00.000Z"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -14,7 +14,7 @@ namespace GoRideShare.posts
 
         // This function is triggered by an HTTP GET request to create a new post
         [Function("PostsSearch")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Posts/Search")] HttpRequest req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "Posts/Search")] HttpRequest req)
         {
             // Read the request body to get the 'Search Criteria'
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();

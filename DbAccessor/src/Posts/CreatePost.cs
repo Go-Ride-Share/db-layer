@@ -68,23 +68,25 @@ namespace GoRideShare.posts
                 string postId = Guid.NewGuid().ToString();
 
                 // Use a parameterized query to insert the post details
-                var query = "INSERT INTO posts (post_id, poster_id, name, origin_lat, origin_lng, destination_lat, destination_lng, description, seats_available, departure_date, price) " +
-                            "VALUES (@Post_id, @Poster_id, @Name, @Origin_lat, @Origin_lng, @Destination_lat, @Destination_lng, @Description, @Seats_available, @Departure_date,@Price)";
+                var query = "INSERT INTO posts (post_id, poster_id, name, origin, origin_name, origin_lat, origin_lng, destination, destination_name, destination_lat, destination_lng, description, seats_available, departure_date, price) " +
+                            "VALUES (@Post_id, @Poster_id, @Name, POINT(@Origin_lat, @Origin_lng), @Origin_name, @Origin_lat, @Origin_lng, POINT(@Destination_lat, @Destination_lng), @Destination_name, @Destination_lat, @Destination_lng, @Description, @Seats_available, @Departure_date, @Price)";
 
                 // Use parameterized query to prevent SQL injection
                 using (var command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@Post_id",         postId);
-                    command.Parameters.AddWithValue("@Poster_id",       userId);
-                    command.Parameters.AddWithValue("@Name",            newPost.Name);
-                    command.Parameters.AddWithValue("@Origin_lat",      newPost.OriginLat);
-                    command.Parameters.AddWithValue("@Origin_lng",      newPost.OriginLng);
-                    command.Parameters.AddWithValue("@Destination_lat", newPost.DestinationLat);
-                    command.Parameters.AddWithValue("@Destination_lng", newPost.DestinationLng);
-                    command.Parameters.AddWithValue("@Description",     newPost.Description);
-                    command.Parameters.AddWithValue("@Seats_available", newPost.SeatsAvailable);
-                    command.Parameters.AddWithValue("@Departure_date",  newPost.DepartureDate);
-                    command.Parameters.AddWithValue("@Price",           newPost.Price);
+                    command.Parameters.AddWithValue("@Post_id",          postId);
+                    command.Parameters.AddWithValue("@Poster_id",        userId);
+                    command.Parameters.AddWithValue("@Name",             newPost.Name);
+                    command.Parameters.AddWithValue("@Origin_name",      newPost.OriginName);                    
+                    command.Parameters.AddWithValue("@Origin_lat",       newPost.OriginLat);
+                    command.Parameters.AddWithValue("@Origin_lng",       newPost.OriginLng);
+                    command.Parameters.AddWithValue("@Destination_name", newPost.DestinationName); 
+                    command.Parameters.AddWithValue("@Destination_lat",  newPost.DestinationLat);
+                    command.Parameters.AddWithValue("@Destination_lng",  newPost.DestinationLng);
+                    command.Parameters.AddWithValue("@Description",      newPost.Description);
+                    command.Parameters.AddWithValue("@Seats_available",  newPost.SeatsAvailable);
+                    command.Parameters.AddWithValue("@Departure_date",   newPost.DepartureDate);
+                    command.Parameters.AddWithValue("@Price",            newPost.Price);
 
                     try
                     {
