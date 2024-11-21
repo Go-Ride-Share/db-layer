@@ -59,6 +59,14 @@ namespace GoRideShare.posts
                             while (await reader.ReadAsync())
                             {
                                 try{
+                                    // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
+                                    string storedPosterId;
+                                    int ordinal = reader.GetOrdinal("poster_id");
+                                    if (reader[ordinal].GetType() == typeof(Guid))
+                                        storedPosterId = reader.GetGuid(ordinal).ToString();
+                                    else
+                                        storedPosterId = reader.GetString(ordinal);
+
                                     User poster = new User
                                     {
                                         UserId = reader.GetGuid(  reader.GetOrdinal("user_id")),
@@ -71,7 +79,7 @@ namespace GoRideShare.posts
                                     returnPost = new Post
                                     {
                                         PostId          = reader.GetGuid(  reader.GetOrdinal("post_id")),
-                                        PosterId        = reader.GetGuid(  reader.GetOrdinal("poster_id")),
+                                        PosterId        = storedPosterId,
                                         Name            = reader.GetString(reader.GetOrdinal("name")),
                                         Description     = reader.GetString(reader.GetOrdinal("description")),
                                         DepartureDate   = reader.GetString(reader.GetOrdinal("departure_date")),
@@ -81,18 +89,15 @@ namespace GoRideShare.posts
                                         OriginLng       = reader.GetFloat( reader.GetOrdinal("origin_lng")),
                                         DestinationLat  = reader.GetFloat( reader.GetOrdinal("destination_lat")),
                                         DestinationLng  = reader.GetFloat( reader.GetOrdinal("destination_lng")),
-                                        CreatedAt       = reader.GetDateTime(reader.GetOrdinal("created_at")),
-                                        Poster = poster,
-
-                                        // Optional fields may be null
-                                        OriginName      = !reader.IsDBNull(reader.GetOrdinal("origin_name")) ? reader.GetString(reader.GetOrdinal("origin_name")) : null,
-                                        DestinationName = !reader.IsDBNull(reader.GetOrdinal("destination_name")) ? reader.GetString(reader.GetOrdinal("destination_name")) : null,
+                                        Price           = reader.GetFloat( reader.GetOrdinal("price")),
+                                        SeatsAvailable  = reader.GetInt32( reader.GetOrdinal("seats_available"))
                                     };
-                                }
-                                catch (Exception e)
+                                    posts.Add(post);
+                                } 
+                                catch (Exception)
                                 {
                                     //Shouldn't be possible, but invalid database entries can cause it.
-                                    _logger.LogWarning($"Invalid post in DB: {e.Message}"); 
+                                    _logger.LogWarning($"Invalid post in DB"); 
                                 }
                             }
                             _logger.LogInformation("Post retrieved successfully.");

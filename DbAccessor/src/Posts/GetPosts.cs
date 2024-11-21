@@ -84,9 +84,19 @@ namespace GoRideShare.posts
                             while (await reader.ReadAsync())
                             {
                                 try{
+
+
+                                    // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
+                                    string storedPosterId;
+                                    int ordinal = reader.GetOrdinal("poster_id");
+                                    if (reader[ordinal].GetType() == typeof(Guid))
+                                        storedPosterId = reader.GetGuid(ordinal).ToString();
+                                    else
+                                        storedPosterId = reader.GetString(ordinal);
+
                                     User poster = new User
                                     {
-                                        UserId = reader.GetGuid(  reader.GetOrdinal("user_id")),
+                                        UserId = storedPosterId,
                                         Name   = reader.GetString(reader.GetOrdinal("user_name")),
                                         
                                         // Optional field may be null
@@ -96,7 +106,7 @@ namespace GoRideShare.posts
                                     Post post = new Post
                                     {
                                         PostId          = reader.GetGuid(  reader.GetOrdinal("post_id")),
-                                        PosterId        = reader.GetGuid(  reader.GetOrdinal("poster_id")),
+                                        PosterId        = storedPosterId,
                                         Name            = reader.GetString(reader.GetOrdinal("name")),
                                         Description     = reader.GetString(reader.GetOrdinal("description")),
                                         DepartureDate   = reader.GetString(reader.GetOrdinal("departure_date")),

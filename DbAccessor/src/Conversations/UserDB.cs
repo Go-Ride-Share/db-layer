@@ -5,7 +5,7 @@ namespace GoRideShare.messages
     public static class UserDB
     {
 
-        public static async Task<List<User>> FetchUsers(List<Guid> users)
+        public static async Task<List<User>> FetchUsers(List<string> users)
         {
             // Retrieve the database connection string from environment variables
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
@@ -29,7 +29,12 @@ namespace GoRideShare.messages
 
                             if(!hasNulls)
                             {
-                                var user_id = reader.GetGuid(0);
+                                // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
+                                string user_id;
+                                if (reader[0].GetType() == typeof(Guid))
+                                    user_id = reader.IsDBNull(0) ? null : reader.GetGuid(0).ToString();
+                                else
+                                    user_id = reader.IsDBNull(0) ? null : reader.GetString(0);
                                 var name = reader.GetString(1);
                                 var photo = reader.IsDBNull(2) ? null : reader.GetString(2);
                                 userObjects.Add( new User(user_id, name, photo ) );
@@ -41,7 +46,7 @@ namespace GoRideShare.messages
             }
         }
 
-        public static async Task<User?> FetchUser(Guid userId)
+        public static async Task<User?> FetchUser(string userId)
         {
             // Retrieve the database connection string from environment variables
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
@@ -63,7 +68,12 @@ namespace GoRideShare.messages
 
                             if(!hasNulls)
                             {
-                                var user_id = reader.GetGuid(0);
+                                // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
+                                string user_id;
+                                if (reader[0].GetType() == typeof(Guid))
+                                    user_id = reader.IsDBNull(0) ? null : reader.GetGuid(0).ToString();
+                                else
+                                    user_id = reader.IsDBNull(0) ? null : reader.GetString(0);
                                 var name = reader.GetString(1);
                                 var photo = reader.IsDBNull(2) ? "" : reader.GetString(2);
                                 return new User(user_id, name, photo );

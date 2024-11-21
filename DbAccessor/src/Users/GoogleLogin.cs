@@ -7,21 +7,25 @@ using System.Text.Json;
 
 namespace GoRideShare.users
 {
-    // This class handles login credential verification
-    public class LoginUser(ILogger<LoginUser> logger)
+    public class GoogleLogin
     {
-        private readonly ILogger<LoginUser> _logger = logger;
+        private readonly ILogger<GoogleLogin> _logger;
 
-        // This function is triggered by an HTTP POST request
-        [Function("UserLogin")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "Users/Login")] HttpRequest req)
+        public GoogleLogin(ILogger<GoogleLogin> logger)
+        {
+            _logger = logger;
+        }
+
+        [Function("GoogleLogin")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
             // Read the request body to get the user's login data (email and password hash)
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var userToLogin = JsonSerializer.Deserialize<LoginCredentials>(requestBody);
+            var userToLogin = JsonSerializer.Deserialize<GoogleLoginCredentials>(requestBody);
 
             // Check if user data is missing or invalid
-            if (userToLogin == null || string.IsNullOrEmpty(userToLogin.Email) || string.IsNullOrEmpty(userToLogin.PasswordHash))
+            if (userToLogin == null || string.IsNullOrEmpty(userToLogin.Email) 
+                || string.IsNullOrEmpty(userToLogin.Name) || string.IsNullOrEmpty(userToLogin.UserId))
             {
                 return new BadRequestObjectResult("Incomplete user data.");
             }
@@ -50,7 +54,7 @@ namespace GoRideShare.users
                 }
 
                 // Query to check if the email exists in the database and retrieve the password hash
-                var query = "SELECT user_id, password_hash, photo FROM users WHERE email = @Email";
+                var query = "SELECT user_id, password_hash, photo, name FROM users WHERE email = @Email";
 
                 // Execute the SQL query using a parameterized command to prevent SQL injection
                 using (var command = new MySqlCommand(query, connection))
@@ -63,20 +67,26 @@ namespace GoRideShare.users
                         {
                             if (await reader.ReadAsync())
                             {
-                                string storedUserId;
+                                
                                 // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
                                 if (reader[0].GetType() == typeof(Guid))
                                     storedUserId = reader.IsDBNull(0) ? null : reader.GetGuid(0).ToString();
                                 else
-                                    storedUserId = reader.IsDBNull(0) ? null : reader.GetString(0);
-                                var storedPasswordHash = reader.IsDBNull(1) ? null : reader.GetString(1);
+                                    storedUserId = reader.IsDBNull(0) ? null : reader.GetString(0);                                var storedPasswordHash = reader.IsDBNull(1) ? null : reader.GetString(1);
                                 var storedPhoto = reader.IsDBNull(2) ? null : reader.GetString(2);
+                                var storedName = reader.IsDBNull(3) ? null : reader.GetString(3);
 
                                 // Check if password and username exist, and passwords match
-                                if (storedPasswordHash == null || storedUserId == null || storedPasswordHash != userToLogin.PasswordHash)
-                                    return new ObjectResult("Invalid login credentials.")
+                                if (storedPasswordHash == null || storedUserId == null || storedName == null
+                                    || storedPasswordHash != userToLogin.PasswordHash || storedUserId != userToLogin.UserId
+                                    || storedName != userToLogin.Name)
+                                    
+                                    return new ObjectResult(new {
+                                        error = "AUTH_METHOD_MISMATCH",
+                                        message = "This user was registered with a password."
+                                    })
                                     {
-                                        StatusCode = StatusCodes.Status401Unauthorized
+                                        StatusCode = 409
                                     };
 
                                 // If the password is correct, return 200 OK
@@ -101,6 +111,6 @@ namespace GoRideShare.users
                     }
                 }
             }
-        }
+        } // GoogleLogin
     }
 }

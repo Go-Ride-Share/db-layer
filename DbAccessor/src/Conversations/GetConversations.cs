@@ -28,7 +28,7 @@ namespace GoRideShare.messages
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route ="Conversations")] HttpRequest req)
         {
             // If validation result is not null, return the bad request result
-            var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
+            var validationResult = Utilities.ValidateHeaders(req.Headers, out string userId);
             if (validationResult != null)
             {
                 _logger.LogError("Invalid Headers");
@@ -53,9 +53,9 @@ namespace GoRideShare.messages
                 if(conversations.Count > 0)
                 {
                     // Fetch users from SQL
-                    List<Guid> userIds = [.. conversations.SelectMany(convo => convo.Users).Where(u => u != userId)];
+                    List<string> userIds = [.. conversations.SelectMany(convo => convo.Users).Where(u => u != userId)];
                     List<User> users = await UserDB.FetchUsers(userIds);    //Throws an Exception
-                    Guid otherUser = Guid.Empty;
+                    string otherUser = Guid.Empty.ToString();
                     
                     //Connect the User info to their conversation
                     foreach (var convo in conversations)
