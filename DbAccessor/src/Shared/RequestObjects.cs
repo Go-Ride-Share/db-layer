@@ -13,6 +13,21 @@ namespace GoRideShare
         public string PasswordHash { get; set; } = passwordHash;
     }
 
+     public class GoogleLoginCredentials
+    {
+        [JsonPropertyName("email")]
+        public string? Email { get; set; }
+
+        [JsonPropertyName("password")]
+        public string PasswordHash { get; set; } = "googleuser";
+
+        [JsonPropertyName("id")]
+        public string? UserId {get; set;}
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+    }
+
     public class UserRegistrationInfo
     {
         [JsonPropertyName("email")]
@@ -32,6 +47,10 @@ namespace GoRideShare
 
         [JsonPropertyName("photo")]
         public string? Photo { get; set; }
+
+        [JsonPropertyName("id")]
+        public string? Userid { get; set; }
+
     }
 
     public class PostDetails
@@ -41,7 +60,7 @@ namespace GoRideShare
         
         [JsonRequired]
         [JsonPropertyName("posterId")]
-        public required Guid PosterId { get; set; }
+        public required string PosterId { get; set; }
 
         [JsonRequired]
         [JsonPropertyName("name")]
@@ -124,7 +143,7 @@ namespace GoRideShare
 
         [JsonRequired]
         [JsonPropertyName("userId")]
-        public required Guid UserId { get; set; }
+        public required string UserId { get; set; }
         
         [JsonRequired]
         [JsonPropertyName("contents")]
@@ -156,7 +175,7 @@ namespace GoRideShare
     {
         [JsonRequired]
         [JsonPropertyName("userId")]
-        public required Guid UserId  { get; set; }
+        public required string UserId  { get; set; }
         
         [JsonRequired]
         [JsonPropertyName("contents")]
@@ -217,7 +236,7 @@ namespace GoRideShare
         [BsonElement("users")]
         [JsonRequired]
         [JsonPropertyName("users")]
-        public List<Guid> Users { get; set; } = null!;
+        public List<string> Users { get; set; } = null!;
 
         [BsonElement("messages")]
         [JsonRequired]
@@ -226,7 +245,7 @@ namespace GoRideShare
 
         public Conversation
         (
-            List<Guid> users,
+            List<string> users,
             List<Message> messages
         )
         {
@@ -240,7 +259,7 @@ namespace GoRideShare
         [BsonElement("senderId")]
         [JsonRequired]
         [JsonPropertyName("senderId")]
-        public Guid SenderId { get; set; }
+        public string SenderId { get; set; }
 
         [BsonElement("contents")]
         [JsonRequired]
@@ -254,7 +273,7 @@ namespace GoRideShare
 
         public Message
         (
-            Guid senderId,
+            string senderId,
             string contents,
             DateTime timeStamp
         )
@@ -268,7 +287,7 @@ namespace GoRideShare
     public class User
     {          
         [JsonPropertyName("userId")]
-        public Guid? UserId { get; set; }
+        public string? UserId { get; set; }
 
         [JsonRequired]
         [JsonPropertyName("name")]
@@ -280,7 +299,7 @@ namespace GoRideShare
 
         public User
         (
-            Guid userId,
+            string userId,
             string name,
             string photo
         )

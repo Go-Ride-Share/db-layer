@@ -7,27 +7,19 @@ namespace GoRideShare
     public static class Utilities
     {
         // Method that validates headers, outputs the userID and dbToken, returns exception if headers  missing, null if headers are good
-        public static IActionResult? ValidateHeaders(IHeaderDictionary headers, out Guid userId)
+        public static IActionResult? ValidateHeaders(IHeaderDictionary headers, out string userId)
         {
-            userId = Guid.Empty;
+            userId = Guid.Empty.ToString();
             // Check for X-User-ID  and X-DbToken headers
             if (!headers.TryGetValue("X-User-ID", out var userIdValue) || string.IsNullOrWhiteSpace(userIdValue))
             {
                 return new BadRequestObjectResult("Missing the following header: 'X-User-ID'.");
             }
-            try
-            {
-                userId = Guid.Parse(userIdValue.ToString());
-            }
-            catch (FormatException)
-            {
-                return new BadRequestObjectResult("ERROR: Invalid X-User-ID Header: Not a Guid");
-            }
 
             return null; // All headers are valid
         }
 
-        internal static async Task<(bool error, string response)> MakeHttpGetRequest(Guid xUserId, string endpoint)
+        internal static async Task<(bool error, string response)> MakeHttpGetRequest(string xUserId, string endpoint)
         {
             // Create a new HttpClient instance
             using (var client = new HttpClient())

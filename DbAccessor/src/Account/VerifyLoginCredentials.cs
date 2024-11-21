@@ -63,7 +63,12 @@ namespace GoRideShare
                         {
                             if (await reader.ReadAsync())
                             {
-                                var storedUserId = reader.IsDBNull(0) ? null : reader.GetGuid(0).ToString();
+                                string storedUserId;
+                                // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
+                                if (reader[0].GetType() == typeof(Guid))
+                                    storedUserId = reader.IsDBNull(0) ? null : reader.GetGuid(0).ToString();
+                                else
+                                    storedUserId = reader.IsDBNull(0) ? null : reader.GetString(0);
                                 var storedPasswordHash = reader.IsDBNull(1) ? null : reader.GetString(1);
                                 var storedPhoto = reader.IsDBNull(2) ? null : reader.GetString(2);
 

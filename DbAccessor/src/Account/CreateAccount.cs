@@ -24,8 +24,7 @@ namespace GoRideShare
 
             // Validate if essential user data is present
             if (userToRegister == null || string.IsNullOrEmpty(userToRegister.Email) ||
-            string.IsNullOrEmpty(userToRegister.Name) || string.IsNullOrEmpty(userToRegister.PasswordHash)
-            || string.IsNullOrEmpty(userToRegister.PhoneNumber))
+            string.IsNullOrEmpty(userToRegister.Name) || string.IsNullOrEmpty(userToRegister.PasswordHash))
             {
                 _logger.LogInformation("Incomplete user data.");
                 return new BadRequestObjectResult("Incomplete user data.");
@@ -54,8 +53,8 @@ namespace GoRideShare
                     return new StatusCodeResult(StatusCodes.Status500InternalServerError);
                 }
 
-                // Generate a new UUID for the user_id
-                string userId = Guid.NewGuid().ToString();
+                // Generate a new GUID for the user_id if one was not passed
+                string userId = userToRegister.Userid ?? Guid.NewGuid().ToString();
 
                 // Use a parameterized query to insert the user data
                 var query = "INSERT INTO users (user_id, email, password_hash, name, bio, phone_number, photo) " +
@@ -76,7 +75,7 @@ namespace GoRideShare
                     {
                         await command.ExecuteNonQueryAsync();
                         _logger.LogInformation("User created successfully.");
-                        return new OkObjectResult(new { User_id = userId });
+                        return new OkObjectResult(new { User_id = userId, userToRegister.Photo});
                     }
                     catch (MySqlException ex)
                     {

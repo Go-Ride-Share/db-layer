@@ -16,7 +16,7 @@ Request paylaod template:
 Response payload template:
 ```
 {
-    user_id: string, ex "new_user_guid"
+    user_id: string, ex "new_user_id"
 }
 ```
 
@@ -32,7 +32,7 @@ Request paylaod template:
 Response payload template:
 ```
 {
-    user_id: string, ex "new_user_guid",
+    user_id: string, ex "new_user_id",
     photo: string, ex "photo_encoding"
 }
 ```
@@ -41,7 +41,7 @@ Response payload template:
 Request Header template:
 ```
 {
-    X-User-ID: string, ex "user_guid_to_get_user",
+    X-User-ID: string, ex "user_id_to_get_user",
 }
 ```
 
@@ -60,7 +60,7 @@ Response payload template:
 Request Header template:
 ```
 {
-    X-User-ID: string, ex "user_guid_to_get_user",
+    X-User-ID: string, ex "user_id_to_get_user",
 }
 ```
 
@@ -80,7 +80,7 @@ Request paylaod template:
 Request Header template:
 ```
 {
-    X-User-ID: string, ex "user_guid_to_get_user",
+    X-User-ID: string, ex "user_id_to_get_user",
 }
 ```
 
@@ -88,7 +88,7 @@ Request paylaod template:
 ```
 {
     "name": "namename",
-    "posterId": "user_guid",
+    "posterId": "user_id",
     "description": "This is a dummy ride-share post.",
     "departureDate": "2024-10-09",
     "originLat": 40.712776,
@@ -103,7 +103,7 @@ Request paylaod template:
 Response payload template:
 ```
 {
-    postId: string, ex "new_post_guid",
+    postId: string, ex "new_post_id",
 }
 ```
 
@@ -111,20 +111,20 @@ Response payload template:
 Request Header template:
 ```
 {
-    X-User-ID: string, ex "user_guid",
+    X-User-ID: string, ex "user_id",
 }
 ```
 
 Request Query parameter template:
 ```
-/GetPost?userId={user_guid}
+/GetPost?userId={user_id}
 ```
 
 Response paylaod template:
 ```
 {
     "name": "namename",
-    "posterId": "user_guid",
+    "posterId": "user_id",
     "description": "This is a dummy ride-share post.",
     "departureDate": "2024-10-09",
     "originLat": 40.712776,

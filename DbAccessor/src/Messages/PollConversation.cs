@@ -31,7 +31,7 @@ namespace GoRideShare
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
             // If validation result is not null, return the bad request result
-            var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
+            var validationResult = Utilities.ValidateHeaders(req.Headers, out string userId);
             if (validationResult != null)
             {
                 _logger.LogError("Invalid Headers");
@@ -84,7 +84,7 @@ namespace GoRideShare
                 conversation.Messages = conversation.Messages.Where(m => dateTimeLimit == null || m.TimeStamp > dateTimeLimit).OrderByDescending(m => m.TimeStamp).Take(pollingLimit).ToList();
 
                 // fetch the other person's userId from the conversation object
-                Guid otherUserId = conversation.Users.First(u => u != userId);
+                string otherUserId = conversation.Users.First(u => u != userId);
                 User? otherUser;
 
                 try

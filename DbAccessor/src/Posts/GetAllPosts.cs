@@ -56,10 +56,18 @@ namespace GoRideShare
                             while (await reader.ReadAsync())
                             {
                                 try{
+                                    // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
+                                    string storedPosterId;
+                                    int ordinal = reader.GetOrdinal("poster_id");
+                                    if (reader[ordinal].GetType() == typeof(Guid))
+                                        storedPosterId = reader.GetGuid(ordinal).ToString();
+                                    else
+                                        storedPosterId = reader.GetString(ordinal);
+
                                     var post = new PostDetails
                                     {
                                         PostId          = reader.GetGuid(  reader.GetOrdinal("post_id")),
-                                        PosterId        = reader.GetGuid(  reader.GetOrdinal("poster_id")),
+                                        PosterId        = storedPosterId,
                                         Name            = reader.GetString(reader.GetOrdinal("name")),
                                         Description     = reader.GetString(reader.GetOrdinal("description")),
                                         DepartureDate   = reader.GetString(reader.GetOrdinal("departure_date")),
@@ -72,10 +80,10 @@ namespace GoRideShare
                                     };
                                     posts.Add(post);
                                 } 
-                                catch (Exception)
+                                catch (Exception e)
                                 {
-                                    //Shouldn't be possible, but invalid database entries can cause it.
-                                    _logger.LogWarning($"Invalid post in DB"); 
+                                    // Shouldn't be possible, but invalid database entries can cause it.
+                                    _logger.LogWarning($"Invalid post in DB: {e.Message}"); 
                                 }
                             }
                             _logger.LogInformation("Posts retrieved successfully.");
