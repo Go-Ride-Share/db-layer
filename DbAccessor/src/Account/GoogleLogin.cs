@@ -69,6 +69,7 @@ namespace GoRideShare
                             {
                                 
                                 // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
+                                string storedUserId;
                                 if (reader[0].GetType() == typeof(Guid))
                                     storedUserId = reader.IsDBNull(0) ? null : reader.GetGuid(0).ToString();
                                 else
