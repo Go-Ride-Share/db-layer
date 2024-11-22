@@ -11,7 +11,7 @@ namespace GoRideShare.users
         private readonly ILogger<GetUser> _logger = logger;
 
         [Function("UserGet")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Users/{user_id}")] HttpRequest req, Guid userId)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Users/{user_id}")] HttpRequest req, Guid user_id)
         {
             /*
             // If validation result is not null, return the bad request result
@@ -51,7 +51,7 @@ namespace GoRideShare.users
 
                 using (var command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@UserId", userId.ToString());
+                    command.Parameters.AddWithValue("@UserId", user_id.ToString());
 
                     try
                     {
