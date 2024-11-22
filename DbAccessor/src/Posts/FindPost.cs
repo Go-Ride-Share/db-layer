@@ -56,10 +56,16 @@ namespace GoRideShare.posts
                 var query = """
                     SELECT *
                     FROM (
-                        SELECT *,
+                        SELECT posts.*,
+                            users.user_id as user_id, 
+                            users.name as user_name,
+                            users.photo as photo,
                             ST_Distance(origin, destination) AS org_distance,
-                            ST_Distance(origin, POINT(@start_lat, @start_lng)) + ST_Distance(POINT(@start_lat, @start_lng), POINT(@end_lat, @end_lng)) + ST_Distance(POINT(@end_lat, @end_lng), destination) AS total_distance
-                        FROM `go-ride-share`.posts
+                            ST_Distance(origin, POINT(@start_lat, @start_lng)) 
+                            + ST_Distance(POINT(@start_lat, @start_lng), POINT(@end_lat, @end_lng)) 
+                            + ST_Distance(POINT(@end_lat, @end_lng), destination) AS total_distance
+                            FROM posts 
+                            JOIN users on posts.poster_id = users.user_id
                     ) as distance_query
                     WHERE total_distance < 2 * org_distance
                     ORDER BY org_distance - total_distance DESC
@@ -87,7 +93,7 @@ namespace GoRideShare.posts
                                     User poster = new User
                                     {
                                         UserId = reader.GetGuid(  reader.GetOrdinal("user_id")),
-                                        Name   = reader.GetString(reader.GetOrdinal("name")),
+                                        Name   = reader.GetString(reader.GetOrdinal("user_name")),
                                         Photo  = reader.GetString(reader.GetOrdinal("photo")),
                                     };
 
@@ -98,22 +104,22 @@ namespace GoRideShare.posts
                                         Name             = reader.GetString(reader.GetOrdinal("name")),
                                         Description      = reader.GetString(reader.GetOrdinal("description")),
                                         DepartureDate    = reader.GetString(reader.GetOrdinal("departure_date")),
-                                        OriginName       = reader.GetString(reader.GetOrdinal("origin_name")),
+                                        OriginName       = !reader.IsDBNull(reader.GetOrdinal("origin_name")) ? reader.GetString(reader.GetOrdinal("origin_name")) : null,
                                         OriginLat        = reader.GetFloat( reader.GetOrdinal("origin_lat")),
                                         OriginLng        = reader.GetFloat( reader.GetOrdinal("origin_lng")),
-                                        DestinationName  = reader.GetString(reader.GetOrdinal("destination_name")),
+                                        DestinationName  = !reader.IsDBNull(reader.GetOrdinal("destination_name")) ? reader.GetString(reader.GetOrdinal("destination_name")) : null,
                                         DestinationLat   = reader.GetFloat( reader.GetOrdinal("destination_lat")),
                                         DestinationLng   = reader.GetFloat( reader.GetOrdinal("destination_lng")),
                                         Price            = reader.GetFloat( reader.GetOrdinal("price")),
                                         SeatsAvailable   = reader.GetInt32( reader.GetOrdinal("seats_available")),
-                                        SeatsTaken       = reader.GetInt32( reader.GetOrdinal("seats_taken")),
                                         Poster = poster
                                     };
                                     posts.Add(post);
                                 } 
-                                catch (Exception)
+                                catch (Exception ex)
                                 {
                                     //Shouldn't be possible, but invalid database entries can cause it.
+                                    _logger.LogError(ex.Message);
                                     _logger.LogWarning($"Invalid post in DB"); 
                                 }
                             }
