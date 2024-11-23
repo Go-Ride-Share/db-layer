@@ -111,7 +111,9 @@ namespace GoRideShare.posts
                                     {
                                         UserId = reader.GetGuid(  reader.GetOrdinal("user_id")),
                                         Name   = reader.GetString(reader.GetOrdinal("user_name")),
-                                        Photo  = reader.GetString(reader.GetOrdinal("photo")),
+                                        
+                                        // Optional field may be null
+                                        Photo  = !reader.IsDBNull(reader.GetOrdinal("photo")) ? reader.GetString(reader.GetOrdinal("photo")) : null,
                                     };
 
                                     Post post = new Post
