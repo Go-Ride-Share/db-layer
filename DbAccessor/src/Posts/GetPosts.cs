@@ -14,7 +14,7 @@ namespace GoRideShare.posts
 
         // This function is triggered by an HTTP GET request to fetch a users posts
         [Function("PostsGet")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Posts/{user_id?}")] HttpRequest req, string? user_id)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Posts/{user_id?}")] HttpRequest req, string? user_id, string? post_id)
         {
             if ( user_id != null && !Guid.TryParse(user_id, out Guid _))
             {
@@ -22,6 +22,14 @@ namespace GoRideShare.posts
                 return new BadRequestObjectResult("Invalid Query Parameter: `user_id` must be a Guid");
             } else {
                 _logger.LogInformation($"user_id: {user_id}");
+            }
+
+            if ( post_id != null && !Guid.TryParse(post_id, out Guid _))
+            {
+                _logger.LogError("Invalid Query Parameter: `post_id` must be a Guid");
+                return new BadRequestObjectResult("Invalid Query Parameter: `post_id` must be a Guid");
+            } else {
+                _logger.LogInformation($"post_id: {post_id}");
             }
 
             // Pagination settings
@@ -63,10 +71,15 @@ namespace GoRideShare.posts
                                 posts.*, 
                                 users.user_id as user_id, 
                                 users.name as user_name,
-                                users.photo as photo FROM posts join users on poster_id = user_id";
+                                users.photo as photo FROM posts join users on poster_id = user_id
+                                WHERE user_id is not null
+                                ";
                 if (user_id != null) {
-                    query += " WHERE poster_id = @Poster_id";
+                    query += " AND poster_id = @Poster_id";
                 }
+                if (post_id != null) {
+                    query += " AND post_id = @Post_id";
+                }                
                 query += " LIMIT @Limit OFFSET @Offset;";
                 _logger.LogInformation(query);
 
@@ -74,6 +87,7 @@ namespace GoRideShare.posts
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@Poster_id", user_id);
+                    command.Parameters.AddWithValue("@Post_id", post_id);
                     command.Parameters.AddWithValue("@Limit", pageSize);
                     command.Parameters.AddWithValue("@Offset", pageStart);
                     try
