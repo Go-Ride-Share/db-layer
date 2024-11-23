@@ -24,9 +24,22 @@ namespace GoRideShare.posts
                 _logger.LogInformation($"user_id: {user_id}");
             }
 
+            string? post_id = null;
+            if (req.Query.TryGetValue("post_id", out StringValues postIdParam))
+            {
+                Guid post_guid = Guid.Empty;
+                if (!Guid.TryParse(postIdParam[0], out post_guid))
+                {
+                    _logger.LogError("Invalid post_id query param");
+                    return new BadRequestObjectResult("ERROR: Invalid Query Parameter: post_id");
+                } else {
+                    post_id = post_guid.ToString();
+                }
+            }
+
             // Pagination settings
             int pageStart = 0;
-            int pageSize = 20;
+            int pageSize = 50;
             if (req.Query.TryGetValue("pageStart", out StringValues pageStartParam))
             {
                 if (!int.TryParse(pageStartParam[0], out pageStart))
@@ -63,10 +76,15 @@ namespace GoRideShare.posts
                                 posts.*, 
                                 users.user_id as user_id, 
                                 users.name as user_name,
-                                users.photo as photo FROM posts join users on poster_id = user_id";
+                                users.photo as photo FROM posts join users on poster_id = user_id
+                                WHERE user_id is not null
+                                ";
                 if (user_id != null) {
-                    query += " WHERE poster_id = @Poster_id";
+                    query += " AND poster_id = @Poster_id";
                 }
+                if (post_id != null) {
+                    query += " AND post_id = @Post_id";
+                }                
                 query += " LIMIT @Limit OFFSET @Offset;";
                 _logger.LogInformation(query);
 
@@ -74,6 +92,7 @@ namespace GoRideShare.posts
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@Poster_id", user_id);
+                    command.Parameters.AddWithValue("@Post_id", post_id);
                     command.Parameters.AddWithValue("@Limit", pageSize);
                     command.Parameters.AddWithValue("@Offset", pageStart);
                     try
