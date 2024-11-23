@@ -21,7 +21,6 @@ namespace GoRideShare.messages
             return new MongoClient(Environment.GetEnvironmentVariable("MONGODB_ATLAS_URI"));
         }
 
-        //[Function("Messages")]
         [Function("MessagesPost")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route ="Messages")] HttpRequest req)
         {

@@ -179,6 +179,17 @@ namespace GoRideShare.posts
             {
                 return (true, "DestinationLng is Invalid");
             }
+            string dateFormat = "yyyy-MM-ddTHH:mm:ss.fffZ"; // ISO 8601 format
+            if ( !DateTimeOffset.TryParseExact(
+                    DepartureDate, 
+                    dateFormat, 
+                    null, 
+                    System.Globalization.DateTimeStyles.AssumeUniversal, 
+                    out DateTimeOffset result
+            ))
+            {
+                return (true, "DepartureDate uses an Incorrect format; \n Instead use: yyyy-MM-ddTHH:mm:ss.fffZ (ISO 8601 format)");
+            }
 
             return (false, "");
         }
@@ -210,26 +221,38 @@ namespace GoRideShare.posts
         [JsonPropertyName("pageSize")]
         public required float PageSize { get; set; }
 
-        [JsonRequired]
         [JsonPropertyName("price")]
         public float? Price { get; set; }
 
-        [JsonRequired]
+        [JsonPropertyName("numSeats")]
+        public int? NumSeats { get; set; }
+
         [JsonPropertyName("departureDate")]
-        public required string DepartureDate { get; set; }
+        public string? DepartureDate { get; set; }
 
         public SearchCriteria(){}
 
         public (bool, string) validate()
         {
-            if (DepartureDate == "")
-            {
-                return (true, "DepartureDate cannot be empty");
-            }
+            // departureDate is an optional Feild
+            if(DepartureDate != null){
+                if (DepartureDate == "")
+                {
+                    return (true, "DepartureDate cannot be empty");
+                }
 
-            //
-            //  Parse into the correct Date Format
-            //
+                string dateFormat = "yyyy-MM-ddTHH:mm:ss.fffZ"; // ISO 8601 format
+                if ( !DateTimeOffset.TryParseExact(
+                        DepartureDate, 
+                        dateFormat, 
+                        null, 
+                        System.Globalization.DateTimeStyles.AssumeUniversal, 
+                        out DateTimeOffset result
+                ))
+                {
+                    return (true, "DepartureDate uses an Incorrect format; \n Instead use: yyyy-MM-ddTHH:mm:ss.fffZ (ISO 8601 format)");
+                }
+            }
 
             if ( 90 < OriginLat || OriginLat < -90 )
             {
