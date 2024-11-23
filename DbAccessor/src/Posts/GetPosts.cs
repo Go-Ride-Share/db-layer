@@ -14,7 +14,7 @@ namespace GoRideShare.posts
 
         // This function is triggered by an HTTP GET request to fetch a users posts
         [Function("PostsGet")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Posts/{user_id?}")] HttpRequest req, string? user_id, string? post_id)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Posts/{user_id?}")] HttpRequest req, string? user_id)
         {
             if ( user_id != null && !Guid.TryParse(user_id, out Guid _))
             {
@@ -24,17 +24,22 @@ namespace GoRideShare.posts
                 _logger.LogInformation($"user_id: {user_id}");
             }
 
-            if ( post_id != null && !Guid.TryParse(post_id, out Guid _))
+            string? post_id = null;
+            if (req.Query.TryGetValue("post_id", out StringValues postIdParam))
             {
-                _logger.LogError("Invalid Query Parameter: `post_id` must be a Guid");
-                return new BadRequestObjectResult("Invalid Query Parameter: `post_id` must be a Guid");
-            } else {
-                _logger.LogInformation($"post_id: {post_id}");
+                Guid post_guid = Guid.Empty;
+                if (!Guid.TryParse(postIdParam[0], out post_guid))
+                {
+                    _logger.LogError("Invalid post_id query param");
+                    return new BadRequestObjectResult("ERROR: Invalid Query Parameter: post_id");
+                } else {
+                    post_id = post_guid.ToString();
+                }
             }
 
             // Pagination settings
             int pageStart = 0;
-            int pageSize = 20;
+            int pageSize = 50;
             if (req.Query.TryGetValue("pageStart", out StringValues pageStartParam))
             {
                 if (!int.TryParse(pageStartParam[0], out pageStart))
