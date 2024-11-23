@@ -8,43 +8,22 @@ using Microsoft.Extensions.Primitives;
 namespace GoRideShare.posts
 {
     // This class handles making a new Post
-    public class GetPosts(ILogger<GetPosts> logger)
+    public class GetPost(ILogger<GetPost> logger)
     {
-        private readonly ILogger<GetPosts> _logger = logger;
+        private readonly ILogger<GetPost> _logger = logger;
 
         // This function is triggered by an HTTP GET request to fetch a users posts
-        [Function("PostsGet")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Posts/{user_id?}")] HttpRequest req, string? user_id)
+        [Function("PostGet")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Post/{post_id?}")] HttpRequest req, string? post_id)
         {
-            if ( user_id != null && !Guid.TryParse(user_id, out Guid _))
+            if ( post_id != null && !Guid.TryParse(post_id, out Guid _))
             {
-                _logger.LogError("Invalid Query Parameter: `user_id` must be a Guid");
-                return new BadRequestObjectResult("Invalid Query Parameter: `user_id` must be a Guid");
+                _logger.LogError("Invalid Query Parameter: `post_id` must be a Guid");
+                return new BadRequestObjectResult("Invalid Query Parameter: `post_id` must be a Guid");
             } else {
-                _logger.LogInformation($"user_id: {user_id}");
+                _logger.LogInformation($"post_id: {post_id}");
             }
 
-            // Pagination settings
-            int pageStart = 0;
-            int pageSize = 20;
-            if (req.Query.TryGetValue("pageStart", out StringValues pageStartParam))
-            {
-                if (!int.TryParse(pageStartParam[0], out pageStart))
-                {
-                    _logger.LogError("Invalid pageStart query param");
-                    return new BadRequestObjectResult("ERROR: Invalid Query Parameter: pageStart");
-                }
-            }
-            if (req.Query.TryGetValue("pageSize", out StringValues pageSizeParam))
-            {
-                if (!int.TryParse(pageSizeParam[0], out pageSize)) 
-                {
-                    _logger.LogError("Invalid pageSize query param");
-                    return new BadRequestObjectResult("ERROR: Invalid Query Parameter: pageSize");
-                }
-            }
-            _logger.LogInformation($"pageStart: {pageStart}");
-            _logger.LogInformation($"pageSize: {pageSize}");
 
             // Retrieve the database connection string from environment variables
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
@@ -63,24 +42,20 @@ namespace GoRideShare.posts
                                 posts.*, 
                                 users.user_id as user_id, 
                                 users.name as user_name,
-                                users.photo as photo FROM posts join users on poster_id = user_id";
-                if (user_id != null) {
-                    query += " WHERE poster_id = @Poster_id";
-                }
-                query += " LIMIT @Limit OFFSET @Offset;";
+                                users.photo as photo FROM posts join users on poster_id = user_id WHERE post_id = @Post_id";
+
                 _logger.LogInformation(query);
 
                 // Use parameterized query to prevent SQL injection
                 using (var command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@Poster_id", user_id);
-                    command.Parameters.AddWithValue("@Limit", pageSize);
-                    command.Parameters.AddWithValue("@Offset", pageStart);
+                    command.Parameters.AddWithValue("@Post_id", post_id);
+
                     try
                     {
                         using (var reader = await command.ExecuteReaderAsync())
                         {
-                            var posts = new List<object>();
+                            Post? returnPost = null;
                             while (await reader.ReadAsync())
                             {
                                 try{
@@ -93,7 +68,7 @@ namespace GoRideShare.posts
                                         Photo  = !reader.IsDBNull(reader.GetOrdinal("photo")) ? reader.GetString(reader.GetOrdinal("photo")) : null,
                                     };
 
-                                    Post post = new Post
+                                    returnPost = new Post
                                     {
                                         PostId          = reader.GetGuid(  reader.GetOrdinal("post_id")),
                                         PosterId        = reader.GetGuid(  reader.GetOrdinal("poster_id")),
@@ -112,7 +87,6 @@ namespace GoRideShare.posts
                                         OriginName      = !reader.IsDBNull(reader.GetOrdinal("origin_name")) ? reader.GetString(reader.GetOrdinal("origin_name")) : null,
                                         DestinationName = !reader.IsDBNull(reader.GetOrdinal("destination_name")) ? reader.GetString(reader.GetOrdinal("destination_name")) : null,
                                     };
-                                    posts.Add(post);
                                 }
                                 catch (Exception e)
                                 {
@@ -120,8 +94,8 @@ namespace GoRideShare.posts
                                     _logger.LogWarning($"Invalid post in DB: {e.Message}"); 
                                 }
                             }
-                            _logger.LogInformation("Posts retrieved successfully.");
-                            return new OkObjectResult(posts);
+                            _logger.LogInformation("Post retrieved successfully.");
+                            return new OkObjectResult(returnPost);
                         }
                     }
                     catch (MySqlException ex)

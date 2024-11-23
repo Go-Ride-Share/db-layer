@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using MySql.Data.MySqlClient;
 
 namespace GoRideShare
 {
@@ -27,28 +27,25 @@ namespace GoRideShare
             return null; // All headers are valid
         }
 
-        internal static async Task<(bool error, string response)> MakeHttpGetRequest(Guid xUserId, string endpoint)
+        public async static Task<(bool, string)> ValidateConnection(String? connectionString, MySqlConnection connection)
         {
-            // Create a new HttpClient instance
-            using (var client = new HttpClient())
+            // Validate the connection string before trying to open the connection
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-            // Create a new HttpRequestMessage instance
-            using (var request = new HttpRequestMessage(HttpMethod.Get, endpoint))
+                return (true, "Invalid connection string.");
+            }
+
+            try
             {
-                // Add the X-User-ID header to the request
-                request.Headers.Add("X-User-ID", xUserId.ToString());
-
-                // Send the request and get the response
-                var response = await client.SendAsync(request);
-
-                // if its successful, then we know its 200, otherwise 404
-                if (response.IsSuccessStatusCode) {
-                    return (false, await response.Content.ReadAsStringAsync());
-                } else {
-                    return (true, response.StatusCode.ToString());
-                }
+                // open the connection with the database
+                await connection.OpenAsync();
             }
+            catch (MySqlException ex)
+            {
+                // Log the error and return an appropriate response
+                return (true, $"Failed to open database connection: {ex.Message}");
             }
+            return (false, "");
         }
     }
 }

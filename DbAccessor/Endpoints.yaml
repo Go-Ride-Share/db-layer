@@ -1,22 +1,33 @@
 openapi: "3.0.0"
 info:
-  version: 1.0.0
+  version: 1.2.0
   title: Go Ride Share DB Layer API
-  description: <h3> Internal DB API for Post Operations
+  description: <h2> Internal API for database operations
 
 paths:
-  /api/createPost:
+
+# ------ Posts ------ 
+  /api/posts:
     post:
       summary: Save a completed post to the database
       operationId: createPost
       tags:
         - Posts
+      parameters:
+        - name: X-User-ID
+          in: header
+          description: Your user Id (Guid)
+          required: true
+          example: 123e4567-e89b-12d3-a456-426614174000
+          schema:
+            type: string
+            format: string          
       requestBody:
         required: true
         content:  
           application/json:
             schema:
-              $ref: '#/components/schemas/PostObject'   
+              $ref: '#/components/schemas/PostDetails'   
       responses:
         '200':
           description:  Success
@@ -30,32 +41,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnsuccessfulResponse"  
-  /api/updatePost:
-      patch:
-        summary: Save a completed post to the database
-        operationId: updatePost
-        tags:
-          - Posts
-        requestBody:
-          required: true
-          content:  
+    get:
+      summary: Get all posts from the database
+      operationId: getAllPosts
+      tags:
+        - Posts
+      parameters:
+        - name: pageStart
+          in: query
+          description: The offset when querying posts from the table
+          schema:
+            type: integer      
+        - name: pageSize
+          in: query
+          description: The number of entries to return for pagination
+          schema:
+            type: integer            
+      responses:   
+        '200':
+          description:  Success
+          content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PostObject'   
-        responses:
-          '200':
-            description:  Success
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/SuccessfulPostResponse"       
-          '400':
-            description: Unsuccessful
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/UnsuccessfulResponse"                    
-  /api/getPosts/{user_id}:
+                $ref: "#/components/schemas/PostList"          
+        '400':
+          description: Unsuccessful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"                   
+  /api/posts/{user_id}:
     get:
       summary: Get a users posts from the database
       operationId: getPosts
@@ -64,7 +79,7 @@ paths:
       parameters:
         - name: user_id
           in: path
-          description: The ID of the user whos posts you want to query
+          description: The ID of the user who's posts you want to query
           required: true
           schema:
             type: string
@@ -82,21 +97,107 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnsuccessfulResponse"                            
-  /api/getUser:
+  /api/posts/{post_id}:
+    patch:
+        summary: Update a post you have made previously
+        operationId: updatePost
+        tags:
+          - Posts
+        parameters:
+          - name: post_id
+            in: path
+            description: The ID of the post you want to edit (Guid)
+            required: true
+            example: 123e4567-e89b-12d3-a456-426614174000
+            schema:
+              type: string
+              format: string            
+          - name: X-User-ID
+            in: header
+            description: Your user Id (Guid)
+            required: true
+            example: 123e4567-e89b-12d3-a456-426614174000
+            schema:
+              type: string
+              format: string                 
+        requestBody:
+          required: true
+          content:  
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostDetails'   
+        responses:
+          '200':
+            description:  Success
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/SuccessfulPostResponse"       
+          '400':
+            description: Unsuccessful
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/UnsuccessfulResponse"                                    
+  /api/posts/search:
+    post:
+      summary: Get a users posts from the database
+      operationId: postSearch
+      tags:
+        - Posts
+      requestBody:
+        required: true
+        content:  
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchCriteria'   
+ 
+      responses:   
+        '200':
+          description:  Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostList"          
+        '400':
+          description: Unsuccessful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"                     
+
+# ------ Users ------ 
+  /api/users:
+    post:
+      summary: Create a new User
+      operationId: CreateUser
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:  
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegistrationInfo"
+      responses:   
+        '200':
+          description:  Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAccountResponse"         
+  /api/users/{user_id}:
     get:
       summary: Queries a users Profile from the database
       operationId: getUser
       parameters:
-        - name: X-User-ID
-          in: header
+        - name: user_id
+          in: path
+          description: The ID of the user who's posts you want to query
           required: true
           schema:
             type: string
-        - name: X-Db-Token
-          in: header
-          required: true
-          schema:
-            type: string  
+            format: string   
       tags:
         - Users
       responses:   
@@ -106,50 +207,68 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"   
-  /api/CreateAccount:
-    post:
-      summary: Create a new Account
-      operationId: CreateUser
-      tags:
-        - Users
-      requestBody:
-        required: true
-        content:  
-          application/json:
-            schema:
-              $ref: "#/components/schemas/User"
-      responses:   
-        '200':
-          description:  Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateAccountResponse"         
-  /api/EditUser:
-    post:
+    patch:
       summary: Edit a user
       operationId: EditUser
       tags:
         - Users
+      parameters:        
+        - name: user_id
+          in: path
+          description: The ID of the user who's posts you want to query
+          required: true
+          schema:
+            type: string
+            format: string           
       requestBody:
         required: true
         content:  
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: "#/components/schemas/UserRegistrationInfo"
       responses:   
         '200':
           description:  Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateAccountResponse"      
-  /api/CreateConversation:
+                $ref: "#/components/schemas/CreateAccountResponse"     
+  /api/users/login:
+    post:
+      summary: Create a new User
+      operationId: LoginUser
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:  
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginCredentials"
+      responses:   
+        '200':
+          description:  Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAccountResponse"                       
+
+# ------ Conversations ------ 
+  /api/conversations:
     post:
       summary: Create a new conversation between 2 users
       operationId: CreateConversation
       tags:
-        - Messages
+        - Conversations
+      parameters:
+        - name: X-User-ID
+          in: header
+          description: Your user Id (Guid)
+          required: true
+          example: 123e4567-e89b-12d3-a456-426614174000
+          schema:
+            type: string
+            format: string          
       requestBody:
         required: true
         content:
@@ -175,16 +294,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerErrorResponse'
-  /api/GetAllConversations:
     get:
       summary: Retrieve a snapshot of conversations for the user specified by "X-User-ID" in the headers. Each conversation will include only the latest message.     
       operationId: GetAllConversations
       tags:
-        - Messages
+        - Conversations
       parameters:
         - name: X-User-ID
           in: header
-          description: The ID of the user whose messages you want to query
+          description: Your user Id (Guid)
           required: true
           schema:
             type: string
@@ -209,13 +327,66 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerErrorResponse'
-  /api/PollConversation/{conversationId}:
+
+# ------ Messages ------     
+  /api/messages:
+    post:
+      summary: Post a message to a conversation
+      operationId: PostMessage
+      tags:
+        - Messages
+      parameters:
+        - name: X-User-ID
+          in: header
+          description: Your user Id (Guid)
+          required: true
+          example: 123e4567-e89b-12d3-a456-426614174000
+          schema:
+            type: string
+            format: string          
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageObject'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json: 
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: The ID of the Conversation in which Message was added
+                    type: string
+                    example: "5a3f9c5b9d8e8d001f123456"
+        '400':
+          description: Unsuccessful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnsuccessfulResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorResponse'
+  /api/messages/{conversationId}:
     get:
       summary: Retrieve limited number of messages for a given conversation ID
       operationId: PollConversation
       tags:
         - Messages
       parameters:
+        - name: X-User-ID
+          in: header
+          description: Your user Id (Guid)
+          required: true
+          schema:
+            type: string
         - name: conversationId
           in: path
           description: The ID of the conversation you want to query
@@ -234,12 +405,6 @@ paths:
           required: false
           schema:
             type: integer
-        - name: X-User-ID
-          in: header
-          description: The ID of the user whose messages you want to query
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: Success
@@ -261,45 +426,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerErrorResponse'
-  /api/PostMessage:
-    post:
-      summary: Post a message to a conversation
-      operationId: PostMessage
-      tags:
-        - Messages
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PostMessageRequest'
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    description: The ID of the Conversation in which Message was added
-                    type: string
-                    example: "cccccccc-ccccc-cccc"
-        '400':
-          description: Unsuccessful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UnsuccessfulResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServerErrorResponse'
+
 components:
   schemas:
-    PostObject:
+    PostDetails:
       type: object
       required:
         - name
@@ -313,12 +443,16 @@ components:
       properties:
         name:
           type: string  
+        originName:
+          type: string           
         originLng:
           type: number
           format: float  
         originLat:
           type: number
           format: float  
+        destinationName:
+          type: string       
         destinationLng:
           type: number
           format: float  
@@ -331,15 +465,50 @@ components:
           type: number
           format: float                 
         seatsAvailable:
-          type: number
-          format: float   
+          type: number        
     PostList:
-      type: object
-      properties:
-        post_id:
-          type: array
-          items:
-            type: object     
+      type: array
+      items:
+        type: object
+        properties:
+          postId:
+            type: string 
+          posterId:
+            type: string             
+          name:
+            type: string  
+          originName:
+            type: string          
+          originLng:
+            type: number
+            format: float  
+          originLat:
+            type: number
+            format: float  
+          destinationName:
+            type: string         
+          destinationLng:
+            type: number
+            format: float  
+          destinationLat:
+            type: number
+            format: float  
+          departureDate:
+            type: string  
+          price:
+            type: number
+            format: float                 
+          seatsAvailable:
+            type: number   
+          user:
+            type: object
+            properties:
+              userId:
+                type: string
+              name:
+                type: string
+              photo:
+                type: string
     SuccessfulPostResponse:
       type: object
       required:
@@ -354,8 +523,40 @@ components:
       properties:
         error:
           type: string      
-          default: "Incomplete post data" 
+          default: "ERROR MESSAGE" 
     User:
+      type: object
+      required:
+        - user_id
+        - email
+        - password
+        - name
+        - bio
+        - phone
+        - photo
+      properties:
+        user_id:
+          type: string      
+          example: "123e4567-e89b-12d3-a456-426614174000" 
+        email:
+          type: string      
+          example: "test@email.com" 
+        password:
+          type: string      
+          example: "testPassword"     
+        name:
+          type: string      
+          example: "testName"     
+        bio:
+          type: string      
+          example: "testBio"            
+        phone:
+          type: string      
+          example: "4312245323"          
+        photo:
+          type: string      
+          example: "testPhotoUrl"           
+    UserRegistrationInfo:
       type: object
       required:
         - email
@@ -382,7 +583,7 @@ components:
           example: "4312245323"          
         photo:
           type: string      
-          example: "testPhotoUrl"   
+          example: "testPhotoUrl" 
     CreateAccountResponse:
       type: object
       required:
@@ -393,13 +594,13 @@ components:
     ConversationRequest:
       type: object
       required:
-        - userId
+        - recipientId
         - contents
         - timeStamp
       properties:
-        userId:
+        recipientId:
           type: string
-          example: "aaaaaaaa-aaaaa-aaaa"
+          example: "The UserId of the person you want to message"
         contents:
           type: string
           example: "Hello, is this ride available?"
@@ -415,13 +616,13 @@ components:
       properties:
         conversation_id:
           type: string
-          example: "cccccccc-ccccc-cccc" 
+          example: "5a3f9c5b9d8e8d001f123456" 
         user:
           type: object
           properties:
             userId:
               type: string
-              example: "aaaaaaaa-aaaaa-aaaa"
+              example: "123e4567-e89b-12d3-a456-426614174000"
             name:
               type: string
               example: "John Smith"
@@ -432,23 +633,99 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MessageObject'
-    PostMessageRequest:
+    MessageObject:
       type: object
       required:
         - conversationId
-        - userId
         - contents
         - timeStamp
       properties:
         conversationId:
           type: string
-          example: "cccccccc-ccccc-cccc"
-        userId:
-          type: string
-          example: "aaaaaaaa-aaaaa-aaaa"
+          example: "5a3f9c5b9d8e8d001f123456"
         contents:
           type: string
           example: "Hello, is this ride available?"
         timeStamp:
           type: string
           example: "2021-03-01T00:00:00Z"
+    ServerErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string      
+          default: "ERROR MESSAGE" 
+    LoginCredentials:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string      
+          example: "test@email.com" 
+        password:
+          type: string      
+          example: "testPassword"     
+    SearchCriteria:
+      type: object
+      required:
+        - originLat
+        - originLng
+        - destinationLat
+        - destinationLng       
+        - departureDate
+      properties:
+        originLat:
+          type: number
+          format: float
+          example: "-15.7568"
+        originLng:
+          type: number
+          format: float
+          example: "45.4568" 
+        destinationLat:
+          type: number
+          format: float
+          example: "-15.4568"
+        destinationLng:
+          type: number
+          format: float
+          example: "45.9758"           
+        pageStart:
+          type: number
+          format: int
+          example: "5"           
+        pageSize:
+          type: number
+          format: int
+          example: "10"               
+        price:
+          type: number
+          format: float
+          example: "50.5"
+        departureDate:
+          type: string
+          example: "2024-11-04T06:00:00.000Z"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

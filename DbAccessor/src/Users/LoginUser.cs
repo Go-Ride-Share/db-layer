@@ -5,16 +5,16 @@ using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using System.Text.Json;
 
-namespace GoRideShare
+namespace GoRideShare.users
 {
     // This class handles login credential verification
-    public class VerifyLoginCredentials(ILogger<VerifyLoginCredentials> logger)
+    public class LoginUser(ILogger<LoginUser> logger)
     {
-        private readonly ILogger<VerifyLoginCredentials> _logger = logger;
+        private readonly ILogger<LoginUser> _logger = logger;
 
         // This function is triggered by an HTTP POST request
-        [Function("VerifyLoginCredentials")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+        [Function("UserLogin")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "Users/Login")] HttpRequest req)
         {
             // Read the request body to get the user's login data (email and password hash)
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();

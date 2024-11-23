@@ -3,10 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-using MongoDB.Bson;
 using Microsoft.Azure.Functions.Worker;
 
-namespace GoRideShare
+namespace GoRideShare.messages
 {
 
     public class CreateConversation
@@ -27,8 +26,8 @@ namespace GoRideShare
             _logger = logger;
         }
         
-        [Function("CreateConversation")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+        [Function("ConversationsPost")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route ="Conversations")] HttpRequest req)
         {
             // If validation result is not null, return the bad request result
             var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
@@ -65,17 +64,17 @@ namespace GoRideShare
                 return new BadRequestObjectResult("Incomplete Conversation Request data.");
             }
 
-            if (convoRequest.UserId == userId)
+            if (convoRequest.RecipientId == userId)
             {
                 _logger.LogError("You cannot start a conversation with yourself");
                 return new BadRequestObjectResult("You cannot start a conversation with yourself"); 
             }
 
-            User? otherUser;
+            User? recipient;
             try
             {
-                otherUser = await UserDB.FetchUser(convoRequest.UserId);
-                if ( otherUser == null) {
+                recipient = await UserDB.FetchUser(convoRequest.RecipientId);
+                if ( recipient == null) {
                     _logger.LogError("Failed to get user details from DB");
                     return new ObjectResult("Failed to get user details from DB") { StatusCode = StatusCodes.Status500InternalServerError };
                 }
@@ -98,7 +97,7 @@ namespace GoRideShare
             (
                 new List<Guid> 
                 {
-                    convoRequest.UserId,
+                    convoRequest.RecipientId,
                     userId
                 }, 
                 new List<Message> { newMessage }
@@ -115,7 +114,7 @@ namespace GoRideShare
                 var responseObj = new ConversationResponse
                 (
                     newConversation.ConversationId, 
-                    otherUser, 
+                    recipient, 
                     new List<Message> {newMessage} 
                 );
 

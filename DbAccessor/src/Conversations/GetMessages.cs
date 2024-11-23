@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -6,12 +5,12 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using Microsoft.Azure.Functions.Worker;
 
-namespace GoRideShare
+namespace GoRideShare.messages
 {
-    public class PollConversation
+    public class GetMessages
     {
 
-        private readonly ILogger<PollConversation> _logger;
+        private readonly ILogger<GetMessages> _logger;
 
         // initialize the MongoDB client lazily. This is a best practice for serverless functions because it is not efficient to establish Mongo connections on every execution of our Azure Function
         public static Lazy<MongoClient> lazyClient = new Lazy<MongoClient>(InitializeMongoClient);
@@ -22,13 +21,13 @@ namespace GoRideShare
             return new MongoClient(Environment.GetEnvironmentVariable("MONGODB_ATLAS_URI"));
         }
 
-        public PollConversation(ILogger<PollConversation> logger)
+        public GetMessages(ILogger<GetMessages> logger)
         {
             _logger = logger;
         }
 
-        [Function("PollConversation")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+        [Function("MessagesGet")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route ="Messages/{conversation_id}")] HttpRequest req, string conversation_id)
         {
             // If validation result is not null, return the bad request result
             var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
@@ -36,12 +35,6 @@ namespace GoRideShare
             {
                 _logger.LogError("Invalid Headers");
                 return validationResult;
-            }
-
-            // Read the conversationId from the query params
-            if (!req.Query.TryGetValue("conversationId", out var conversationId))
-            {
-                return new BadRequestObjectResult("Missing the following query param: \'conversationId\'");
             }
             
             // Timestamp is an optional parameter to limit the response size
@@ -73,7 +66,7 @@ namespace GoRideShare
 
             // Get all conversations where the user string is included in the list of userIDs
             BsonDocument filter = new BsonDocument{
-                { "_id", new ObjectId(conversationId) }
+                { "_id", new ObjectId(conversation_id) }
             };
 
             try
@@ -99,15 +92,13 @@ namespace GoRideShare
                     return new ObjectResult($"ERROR: Failed to access the DB: {e.Message}") { StatusCode = StatusCodes.Status500InternalServerError };
                 }
 
-
                 // create a response object
                 var responseObj = new ConversationResponse
                 (
-                    conversation.ConversationId, 
+                    conversation_id, 
                     otherUser, 
                     conversation.Messages
                 );
-
 
                 return new OkObjectResult(responseObj);
             }

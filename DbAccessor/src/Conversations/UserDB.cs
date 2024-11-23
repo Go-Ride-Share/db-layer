@@ -1,7 +1,6 @@
-using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
-namespace GoRideShare
+namespace GoRideShare.messages
 {
     public static class UserDB
     {
@@ -32,7 +31,7 @@ namespace GoRideShare
                             {
                                 var user_id = reader.GetGuid(0);
                                 var name = reader.GetString(1);
-                                var photo = reader.IsDBNull(2) ? "" : reader.GetString(2);
+                                var photo = reader.IsDBNull(2) ? null : reader.GetString(2);
                                 userObjects.Add( new User(user_id, name, photo ) );
                             }
                         }
