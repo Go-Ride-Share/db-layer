@@ -80,6 +80,7 @@ namespace GoRideShare.posts
 
                 var query = """
                     UPDATE posts SET 
+                        name = @Post_name,
                         origin_name = @Origin_name,
                         origin_lat = @Origin_lat,
                         origin_lng = @Origin_lng,
@@ -97,6 +98,7 @@ namespace GoRideShare.posts
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@Post_id",          post_id);
+                    command.Parameters.AddWithValue("@Post_name",        updatedPost.Name);
                     command.Parameters.AddWithValue("@Origin_name",      updatedPost.OriginName);
                     command.Parameters.AddWithValue("@Origin_lat",       updatedPost.OriginLat);
                     command.Parameters.AddWithValue("@Origin_lng",       updatedPost.OriginLng);
