@@ -43,8 +43,8 @@ namespace GoRideShare.messages
     public class ConversationRequest
     {
         [JsonRequired]
-        [JsonPropertyName("recipientId")]
-        public required Guid RecipientId  { get; set; }
+        [JsonPropertyName("userId")]
+        public required Guid userId  { get; set; }
         
         [JsonRequired]
         [JsonPropertyName("contents")]
