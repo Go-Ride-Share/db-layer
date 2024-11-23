@@ -64,7 +64,7 @@ namespace GoRideShare.messages
                 return new BadRequestObjectResult("Incomplete Conversation Request data.");
             }
 
-            if (convoRequest.RecipientId == userId)
+            if (convoRequest.userId == userId)
             {
                 _logger.LogError("You cannot start a conversation with yourself");
                 return new BadRequestObjectResult("You cannot start a conversation with yourself"); 
@@ -73,7 +73,7 @@ namespace GoRideShare.messages
             User? recipient;
             try
             {
-                recipient = await UserDB.FetchUser(convoRequest.RecipientId);
+                recipient = await UserDB.FetchUser(convoRequest.userId);
                 if ( recipient == null) {
                     _logger.LogError("Failed to get user details from DB");
                     return new ObjectResult("Failed to get user details from DB") { StatusCode = StatusCodes.Status500InternalServerError };
@@ -97,7 +97,7 @@ namespace GoRideShare.messages
             (
                 new List<Guid> 
                 {
-                    convoRequest.RecipientId,
+                    convoRequest.userId,
                     userId
                 }, 
                 new List<Message> { newMessage }

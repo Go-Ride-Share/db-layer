@@ -81,6 +81,7 @@ namespace GoRideShare.posts
                                         OriginLng       = reader.GetFloat( reader.GetOrdinal("origin_lng")),
                                         DestinationLat  = reader.GetFloat( reader.GetOrdinal("destination_lat")),
                                         DestinationLng  = reader.GetFloat( reader.GetOrdinal("destination_lng")),
+                                        CreatedAt       = reader.GetDateTime(reader.GetOrdinal("created_at")),
                                         Poster = poster,
 
                                         // Optional fields may be null

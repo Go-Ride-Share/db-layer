@@ -57,6 +57,10 @@ namespace GoRideShare.posts
         public required string DepartureDate { get; set; }
 
         [JsonRequired]
+        [JsonPropertyName("createdAt")]
+        public required DateTime CreatedAt { get; set; }
+
+        [JsonRequired]
         [JsonPropertyName("user")]
         public required User Poster { get; set; }
 

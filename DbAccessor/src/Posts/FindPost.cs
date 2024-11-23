@@ -112,6 +112,7 @@ namespace GoRideShare.posts
                                         DestinationLng   = reader.GetFloat( reader.GetOrdinal("destination_lng")),
                                         Price            = reader.GetFloat( reader.GetOrdinal("price")),
                                         SeatsAvailable   = reader.GetInt32( reader.GetOrdinal("seats_available")),
+                                        CreatedAt        = reader.GetDateTime(reader.GetOrdinal("created_at")),
                                         Poster = poster
                                     };
                                     posts.Add(post);
