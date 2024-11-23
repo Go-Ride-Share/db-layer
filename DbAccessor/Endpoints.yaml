@@ -438,11 +438,14 @@ components:
         - destinationLng
         - destinationLat
         - departureDate
+        - description
         - price 
         - seatsAvailable
       properties:
         name:
           type: string  
+        description:
+          type: string            
         originName:
           type: string           
         originLng:
@@ -676,7 +679,6 @@ components:
         - originLng
         - destinationLat
         - destinationLng       
-        - departureDate
       properties:
         originLat:
           type: number
@@ -706,6 +708,10 @@ components:
           type: number
           format: float
           example: "50.5"
+        numSeats:
+          type: number
+          format: integer
+          example: "2"          
         departureDate:
           type: string
           example: "2024-11-04T06:00:00.000Z"

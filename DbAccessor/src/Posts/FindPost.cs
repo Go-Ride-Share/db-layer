@@ -68,8 +68,22 @@ namespace GoRideShare.posts
                             JOIN users on posts.poster_id = users.user_id
                     ) as distance_query
                     WHERE total_distance < 2 * org_distance
+                """;
+                if( searchCriteria.DepartureDate != null)
+                {
+                    query += " AND departure_date > @time ";
+                }
+                if( searchCriteria.NumSeats != null)
+                {
+                    query += " AND seats_available > @seats ";
+                }
+                if( searchCriteria.Price != null)
+                {
+                    query += " AND price > @price ";
+                }                
+                query += """
                     ORDER BY org_distance - total_distance DESC
-                    LIMIT @Limit OFFSET @Offset;
+                    LIMIT @limit OFFSET @offset;
                 """;
 
                 // Use parameterized query to reduce SQL injection
@@ -79,8 +93,11 @@ namespace GoRideShare.posts
                     command.Parameters.AddWithValue("@start_lng",   searchCriteria.OriginLng);
                     command.Parameters.AddWithValue("@end_lat",     searchCriteria.DestinationLat);
                     command.Parameters.AddWithValue("@end_lng",     searchCriteria.DestinationLng);
-                    command.Parameters.AddWithValue("@Limit",       searchCriteria.PageSize);
-                    command.Parameters.AddWithValue("@Offset",      searchCriteria.PageStart);
+                    command.Parameters.AddWithValue("@limit",       searchCriteria.PageSize);
+                    command.Parameters.AddWithValue("@offset",      searchCriteria.PageStart);
+                    command.Parameters.AddWithValue("@time",        searchCriteria.DepartureDate);
+                    command.Parameters.AddWithValue("@seats",       searchCriteria.NumSeats);
+                    command.Parameters.AddWithValue("@price",       searchCriteria.Price);
 
                     try
                     {
