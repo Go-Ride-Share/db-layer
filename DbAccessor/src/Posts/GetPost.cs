@@ -56,20 +56,14 @@ namespace GoRideShare.posts
                         using (var reader = await command.ExecuteReaderAsync())
                         {
                             Post? returnPost = null;
+                            var posts = new List<object>();
                             while (await reader.ReadAsync())
                             {
                                 try{
-                                    // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
-                                    string storedPosterId;
-                                    int ordinal = reader.GetOrdinal("poster_id");
-                                    if (reader[ordinal].GetType() == typeof(Guid))
-                                        storedPosterId = reader.GetGuid(ordinal).ToString();
-                                    else
-                                        storedPosterId = reader.GetString(ordinal);
-
-                                    User poster = new User
+                                    string storedPosterId = Utilities.GetUserIdFromReader(reader);
+                                    User poster = new()
                                     {
-                                        UserId = reader.GetGuid(  reader.GetOrdinal("user_id")),
+                                        UserId = storedPosterId,
                                         Name   = reader.GetString(reader.GetOrdinal("user_name")),
                                         
                                         // Optional field may be null
@@ -80,6 +74,7 @@ namespace GoRideShare.posts
                                     {
                                         PostId          = reader.GetGuid(  reader.GetOrdinal("post_id")),
                                         PosterId        = storedPosterId,
+                                        Poster          = poster,
                                         Name            = reader.GetString(reader.GetOrdinal("name")),
                                         Description     = reader.GetString(reader.GetOrdinal("description")),
                                         DepartureDate   = reader.GetString(reader.GetOrdinal("departure_date")),
@@ -89,10 +84,9 @@ namespace GoRideShare.posts
                                         OriginLng       = reader.GetFloat( reader.GetOrdinal("origin_lng")),
                                         DestinationLat  = reader.GetFloat( reader.GetOrdinal("destination_lat")),
                                         DestinationLng  = reader.GetFloat( reader.GetOrdinal("destination_lng")),
-                                        Price           = reader.GetFloat( reader.GetOrdinal("price")),
-                                        SeatsAvailable  = reader.GetInt32( reader.GetOrdinal("seats_available"))
+                                        CreatedAt       = reader.GetDateTime(reader.GetOrdinal("created_at")),
                                     };
-                                    posts.Add(post);
+                                    posts.Add(returnPost);
                                 } 
                                 catch (Exception)
                                 {

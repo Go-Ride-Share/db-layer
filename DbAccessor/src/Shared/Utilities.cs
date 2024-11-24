@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
+using System.Data.Common;
 
 namespace GoRideShare
 {
@@ -38,6 +39,16 @@ namespace GoRideShare
                 return (true, $"Failed to open database connection: {ex.Message}");
             }
             return (false, "");
+        }
+   
+        public static string GetUserIdFromReader (DbDataReader reader)
+        {
+            int ordinal = reader.GetOrdinal("user_id");
+            // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
+            if (reader[ordinal].GetType() == typeof(Guid))
+                return reader.GetGuid(ordinal).ToString();
+            else
+                return reader.GetString(ordinal);
         }
     }
 }

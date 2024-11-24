@@ -29,12 +29,7 @@ namespace GoRideShare.messages
 
                             if(!hasNulls)
                             {
-                                // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
-                                string user_id;
-                                if (reader[0].GetType() == typeof(Guid))
-                                    user_id = reader.IsDBNull(0) ? null : reader.GetGuid(0).ToString();
-                                else
-                                    user_id = reader.IsDBNull(0) ? null : reader.GetString(0);
+                                string user_id = Utilities.GetUserIdFromReader(reader);
                                 var name = reader.GetString(1);
                                 var photo = reader.IsDBNull(2) ? null : reader.GetString(2);
                                 userObjects.Add( new User(user_id, name, photo ) );
@@ -68,12 +63,7 @@ namespace GoRideShare.messages
 
                             if(!hasNulls)
                             {
-                                // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
-                                string user_id;
-                                if (reader[0].GetType() == typeof(Guid))
-                                    user_id = reader.IsDBNull(0) ? null : reader.GetGuid(0).ToString();
-                                else
-                                    user_id = reader.IsDBNull(0) ? null : reader.GetString(0);
+                                string user_id = Utilities.GetUserIdFromReader(reader);
                                 var name = reader.GetString(1);
                                 var photo = reader.IsDBNull(2) ? "" : reader.GetString(2);
                                 return new User(user_id, name, photo );

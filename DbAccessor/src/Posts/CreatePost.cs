@@ -17,7 +17,7 @@ namespace GoRideShare.posts
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "Posts")] HttpRequest req)
         {
             // Validate that the user has the required headers
-            var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
+            var validationResult = Utilities.ValidateHeaders(req.Headers, out string userId);
             if (validationResult != null)
             {
                 _logger.LogError("Invalid Headers");

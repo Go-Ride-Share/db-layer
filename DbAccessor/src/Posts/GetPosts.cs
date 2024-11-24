@@ -16,13 +16,6 @@ namespace GoRideShare.posts
         [Function("PostsGet")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Posts/{user_id?}")] HttpRequest req, string? user_id)
         {
-            if ( user_id != null && !Guid.TryParse(user_id, out Guid _))
-            {
-                _logger.LogError("Invalid Query Parameter: `user_id` must be a Guid");
-                return new BadRequestObjectResult("Invalid Query Parameter: `user_id` must be a Guid");
-            } else {
-                _logger.LogInformation($"user_id: {user_id}");
-            }
 
             // Pagination settings
             int pageStart = 0;
@@ -84,16 +77,7 @@ namespace GoRideShare.posts
                             while (await reader.ReadAsync())
                             {
                                 try{
-
-
-                                    // Connector/Net 6.1.1 and later automatically treat char(36) as a Guid type
-                                    string storedPosterId;
-                                    int ordinal = reader.GetOrdinal("poster_id");
-                                    if (reader[ordinal].GetType() == typeof(Guid))
-                                        storedPosterId = reader.GetGuid(ordinal).ToString();
-                                    else
-                                        storedPosterId = reader.GetString(ordinal);
-
+                                    string storedPosterId = Utilities.GetUserIdFromReader(reader);
                                     User poster = new User
                                     {
                                         UserId = storedPosterId,

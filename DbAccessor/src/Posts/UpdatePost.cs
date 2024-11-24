@@ -26,7 +26,7 @@ namespace GoRideShare.posts
             }
 
             // Validate that the user has the required headers
-            var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
+            var validationResult = Utilities.ValidateHeaders(req.Headers, out string userId);
             if (validationResult != null)
             {
                 _logger.LogError("Invalid Headers");
@@ -127,7 +127,7 @@ namespace GoRideShare.posts
             }
         }
     
-        private async Task<bool> CheckPostOwnership(MySqlConnection  connection, Guid postId, Guid posterId)
+        private async Task<bool> CheckPostOwnership(MySqlConnection  connection, Guid postId, string posterId)
         {
             var query2 = "SELECT post_id, poster_id FROM posts WHERE post_id = @postId";
             using (var command = new MySqlCommand(query2, connection))
@@ -140,7 +140,7 @@ namespace GoRideShare.posts
                         if( !reader.IsDBNull(0) && !reader.IsDBNull(1))
                         {
                             Guid post_id = reader.GetGuid(0);
-                            Guid poster_id = reader.GetGuid(1);
+                            string poster_id = Utilities.GetUserIdFromReader(reader);
                             _logger.LogInformation($"post_id from DB: {post_id}");
                             _logger.LogInformation($"poster_id from DB: {poster_id}");
                             return post_id.Equals(postId) && poster_id.Equals(posterId);

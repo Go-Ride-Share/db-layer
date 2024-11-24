@@ -29,6 +29,10 @@ namespace GoRideShare.users
 
         [JsonPropertyName("photo")]
         public string? Photo { get; set; }
+
+        [JsonPropertyName("id")]
+        public string? Userid { get; set; }
+
     }
 
     public class GoogleLoginCredentials
