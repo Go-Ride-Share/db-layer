@@ -71,15 +71,15 @@ namespace GoRideShare.posts
                 """;
                 if( searchCriteria.DepartureDate != null)
                 {
-                    query += " AND departure_date > @time ";
+                    query += " AND departure_date >= @time ";
                 }
                 if( searchCriteria.NumSeats != null)
                 {
-                    query += " AND seats_available > @seats ";
+                    query += " AND seats_available >= @seats ";
                 }
                 if( searchCriteria.Price != null)
                 {
-                    query += " AND price > @price ";
+                    query += " AND price <= @price ";
                 }                
                 query += """
                     ORDER BY org_distance - total_distance DESC
