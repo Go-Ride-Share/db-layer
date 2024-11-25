@@ -16,7 +16,7 @@ paths:
       parameters:
         - name: X-User-ID
           in: header
-          description: Your user Id (Guid)
+          description: Your user Id
           required: true
           example: 123e4567-e89b-12d3-a456-426614174000
           schema:
@@ -114,7 +114,7 @@ paths:
               format: string            
           - name: X-User-ID
             in: header
-            description: Your user Id (Guid)
+            description: Your user Id
             required: true
             example: 123e4567-e89b-12d3-a456-426614174000
             schema:
@@ -263,7 +263,7 @@ paths:
       parameters:
         - name: X-User-ID
           in: header
-          description: Your user Id (Guid)
+          description: Your user Id
           required: true
           example: 123e4567-e89b-12d3-a456-426614174000
           schema:
@@ -302,7 +302,7 @@ paths:
       parameters:
         - name: X-User-ID
           in: header
-          description: Your user Id (Guid)
+          description: Your user Id
           required: true
           schema:
             type: string
@@ -338,7 +338,7 @@ paths:
       parameters:
         - name: X-User-ID
           in: header
-          description: Your user Id (Guid)
+          description: Your user Id
           required: true
           example: 123e4567-e89b-12d3-a456-426614174000
           schema:
@@ -383,7 +383,7 @@ paths:
       parameters:
         - name: X-User-ID
           in: header
-          description: Your user Id (Guid)
+          description: Your user Id
           required: true
           schema:
             type: string

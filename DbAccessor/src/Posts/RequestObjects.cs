@@ -9,7 +9,7 @@ namespace GoRideShare.posts
         
         [JsonRequired]
         [JsonPropertyName("posterId")]
-        public required Guid PosterId { get; set; }
+        public required string PosterId { get; set; }
 
         [JsonRequired]
         [JsonPropertyName("name")]

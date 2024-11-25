@@ -44,7 +44,7 @@ namespace GoRideShare.messages
     {
         [JsonRequired]
         [JsonPropertyName("userId")]
-        public required Guid userId  { get; set; }
+        public required string userId  { get; set; }
         
         [JsonRequired]
         [JsonPropertyName("contents")]
@@ -105,7 +105,7 @@ namespace GoRideShare.messages
         [BsonElement("users")]
         [JsonRequired]
         [JsonPropertyName("users")]
-        public List<Guid> Users { get; set; } = null!;
+        public List<string> Users { get; set; } = null!;
 
         [BsonElement("messages")]
         [JsonRequired]
@@ -114,7 +114,7 @@ namespace GoRideShare.messages
 
         public Conversation
         (
-            List<Guid> users,
+            List<string> users,
             List<Message> messages
         )
         {
@@ -128,7 +128,7 @@ namespace GoRideShare.messages
         [BsonElement("senderId")]
         [JsonRequired]
         [JsonPropertyName("senderId")]
-        public Guid SenderId { get; set; }
+        public string SenderId { get; set; }
 
         [BsonElement("contents")]
         [JsonRequired]
@@ -142,7 +142,7 @@ namespace GoRideShare.messages
 
         public Message
         (
-            Guid senderId,
+            string senderId,
             string contents,
             DateTime timeStamp
         )

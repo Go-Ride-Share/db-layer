@@ -13,12 +13,12 @@ namespace GoRideShare.users
         private readonly ILogger<LoginUser> _logger = logger;
 
         // This function is triggered by an HTTP POST request
-        [Function("UserLogin")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "Users/Login")] HttpRequest req)
+        [Function("PasswordLogin")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "Users/PasswordLogin")] HttpRequest req)
         {
             // Read the request body to get the user's login data (email and password hash)
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var userToLogin = JsonSerializer.Deserialize<LoginCredentials>(requestBody);
+            var userToLogin = JsonSerializer.Deserialize<PasswordLoginCredentials>(requestBody);
 
             // Check if user data is missing or invalid
             if (userToLogin == null || string.IsNullOrEmpty(userToLogin.Email) || string.IsNullOrEmpty(userToLogin.PasswordHash))
@@ -63,7 +63,7 @@ namespace GoRideShare.users
                         {
                             if (await reader.ReadAsync())
                             {
-                                var storedUserId = reader.IsDBNull(0) ? null : reader.GetGuid(0).ToString();
+                                var storedUserId = Utilities.GetUserIdFromReader(reader, ordinal: 0);
                                 var storedPasswordHash = reader.IsDBNull(1) ? null : reader.GetString(1);
                                 var storedPhoto = reader.IsDBNull(2) ? null : reader.GetString(2);
 
