@@ -27,7 +27,7 @@ namespace GoRideShare.users
     
     public class UserRegistrationInfo
     {
-        [JsonPropertyName("user_id")]
+        [JsonPropertyName("id")]
         public string? UserId { get; set; }
         [JsonPropertyName("email")]
         public string? Email { get; set; }
