@@ -10,7 +10,7 @@ namespace GoRideShare
         // Method that validates headers, outputs the userID and dbToken, returns exception if headers  missing, null if headers are good
         public static IActionResult? ValidateHeaders(IHeaderDictionary headers, out string userId)
         {
-            userId = Guid.Empty.ToString();
+            userId = "";
             // Check for X-User-ID  and X-DbToken headers
             if (!headers.TryGetValue("X-User-ID", out var userIdValue) || string.IsNullOrWhiteSpace(userIdValue))
             {

@@ -55,7 +55,7 @@ namespace GoRideShare.messages
                     // Fetch users from SQL
                     List<string> userIds = [.. conversations.SelectMany(convo => convo.Users).Where(u => u != userId)];
                     List<User> users = await UserDB.FetchUsers(userIds);    //Throws an Exception
-                    string otherUser = Guid.Empty.ToString();
+                    string otherUser = "";
                     
                     //Connect the User info to their conversation
                     foreach (var convo in conversations)
