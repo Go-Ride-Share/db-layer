@@ -30,7 +30,7 @@ namespace GoRideShare.messages
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route ="Conversations")] HttpRequest req)
         {
             // If validation result is not null, return the bad request result
-            var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
+            var validationResult = Utilities.ValidateHeaders(req.Headers, out string userId);
             if (validationResult != null)
             {
                 _logger.LogError("Invalid Headers");
@@ -95,7 +95,7 @@ namespace GoRideShare.messages
             // Create a document for DB insertion
             var newConversation = new Conversation
             (
-                new List<Guid> 
+                new List<string> 
                 {
                     convoRequest.userId,
                     userId

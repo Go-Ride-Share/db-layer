@@ -16,10 +16,10 @@ namespace GoRideShare.posts
         [Function("PostsGet")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Posts/{user_id?}")] HttpRequest req, string? user_id)
         {
-            if ( user_id != null && !Guid.TryParse(user_id, out Guid _))
+            if ( user_id != null)
             {
-                _logger.LogError("Invalid Query Parameter: `user_id` must be a Guid");
-                return new BadRequestObjectResult("Invalid Query Parameter: `user_id` must be a Guid");
+                _logger.LogError("Invalid Query Parameter: `user_id` not given");
+                return new BadRequestObjectResult("Invalid Query Parameter: `user_id` not given");
             } else {
                 _logger.LogInformation($"user_id: {user_id}");
             }
@@ -105,7 +105,7 @@ namespace GoRideShare.posts
                                 try{
                                     User poster = new User
                                     {
-                                        UserId = reader.GetGuid(  reader.GetOrdinal("user_id")),
+                                        UserId = Utilities.GetUserIdFromReader(reader),
                                         Name   = reader.GetString(reader.GetOrdinal("user_name")),
                                         
                                         // Optional field may be null
@@ -114,8 +114,8 @@ namespace GoRideShare.posts
 
                                     Post post = new Post
                                     {
+                                        PosterId        = Utilities.GetUserIdFromReader(reader, columnName: "poster_id"),
                                         PostId          = reader.GetGuid(  reader.GetOrdinal("post_id")),
-                                        PosterId        = reader.GetGuid(  reader.GetOrdinal("poster_id")),
                                         Name            = reader.GetString(reader.GetOrdinal("name")),
                                         Description     = reader.GetString(reader.GetOrdinal("description")),
                                         DepartureDate   = reader.GetString(reader.GetOrdinal("departure_date")),
