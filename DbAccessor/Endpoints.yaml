@@ -233,9 +233,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CreateAccountResponse"     
-  /api/users/login:
+  /api/users/passwordlogin:
     post:
-      summary: Create a new User
+      summary: Attempts to get access keys for user
       operationId: LoginUser
       tags:
         - Users
@@ -244,7 +244,27 @@ paths:
         content:  
           application/json:
             schema:
-              $ref: "#/components/schemas/LoginCredentials"
+              $ref: "#/components/schemas/PasswordLoginCredentials"
+      responses:   
+        '200':
+          description:  Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAccountResponse"                       
+
+  /api/users/googlelogin:
+    post:
+      summary: Attempts to get access keys for user
+      operationId: LoginUser
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:  
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoogleLoginCredentials"
       responses:   
         '200':
           description:  Success
@@ -565,10 +585,11 @@ components:
         - email
         - password
         - name
-        - bio
-        - phone
-        - photo
       properties:
+        id:
+          type: string
+          example: googleuser-2342342523452345
+          description: only passed if the user signs up through Google
         email:
           type: string      
           example: "test@email.com" 
@@ -590,10 +611,13 @@ components:
     CreateAccountResponse:
       type: object
       required:
-        - user_id
+        - User_id
+        - Photo
       properties:
-        user_id:
-          type: string                     
+        User_id:
+          type: string
+        Photo:
+          type: string
     ConversationRequest:
       type: object
       required:
@@ -660,7 +684,7 @@ components:
         error:
           type: string      
           default: "ERROR MESSAGE" 
-    LoginCredentials:
+    PasswordLoginCredentials:
       type: object
       required:
         - email
@@ -671,7 +695,28 @@ components:
           example: "test@email.com" 
         password:
           type: string      
-          example: "testPassword"     
+          example: "password hash"
+    GoogleLoginCredentials:
+      type: object
+      required:
+        - email
+        - password
+        - id
+        - name
+      properties:
+        email:
+          type: string      
+          example: "test@email.com" 
+        password:
+          type: string      
+          example: "googleuser"   
+        id:
+          type: string
+          example: googleuser-2342342523452345
+        name:
+          type: string
+          example: Susan
+          
     SearchCriteria:
       type: object
       required:
