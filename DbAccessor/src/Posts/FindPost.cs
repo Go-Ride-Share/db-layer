@@ -79,7 +79,7 @@ namespace GoRideShare.posts
                 }
                 if( searchCriteria.Price != null)
                 {
-                    query += " AND price <= @price ";
+                    query += " AND price >= @price ";
                 }                
                 query += """
                     ORDER BY org_distance - total_distance DESC
