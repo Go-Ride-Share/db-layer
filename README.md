@@ -135,6 +135,125 @@ Response paylaod template:
     "seatsAvailable": 2
 }
 ```
+### /CreateConversation
+Request header template:
+```
+{
+    X-User-ID: string, ex "user_guid",
+}
+```
+Request body template:
+```
+{
+  "userId": "aaaaaaaa-aaaaa-aaaa",
+  "contents": "Hello, is this ride available?",
+  "timeStamp": "2021-03-01T00:00:00Z"
+}
+```
+Response payload template:
+```
+{
+  "conversation_id": "cccccccc-ccccc-cccc",
+  "user": {
+    "userId": "aaaaaaaa-aaaaa-aaaa",
+    "name": "John Smith",
+    "photo": "www.photourl.com"
+  },
+  "messages": [
+    {
+      "userId": "aaaaaaaa-aaaaa-aaaa",
+      "contents": "Hello, is this ride available?",
+      "timeStamp": "2021-03-01T00:00:00Z (IN ISO 8601 FORMAT)"
+    }
+  ]
+}
+```
+
+### /GetAllConversations
+Request header template:
+```
+{
+    X-User-ID: string, ex "user_guid",
+}
+```
+Response payload template:
+```
+{
+  "conversation_id": "cccccccc-ccccc-cccc",
+  "user": {
+    "userId": "aaaaaaaa-aaaaa-aaaa",
+    "name": "John Smith",
+    "photo": "www.photourl.com"
+  },
+  "messages": [
+    {
+      "userId": "aaaaaaaa-aaaaa-aaaa",
+      "contents": "Hello, is this ride available?",
+      "timeStamp": "2021-03-01T00:00:00Z (IN ISO 8601 FORMAT)"
+    }
+  ]
+}
+```
+
+### /PollConversation
+Request header template:
+```
+{
+    X-User-ID: string, ex "user_guid",
+}
+```
+Request query parameter template:
+```
+{
+    conversationId = "cccccccc-ccccc-cccc" (required)
+    limit = 50 (optional)
+    timeStart = "2021-03-01T00:00:00Z" (optional)
+}
+```
+Response payload template:
+```
+[
+  {
+    "conversation_id": "cccccccc-ccccc-cccc",
+    "user": {
+      "userId": "aaaaaaaa-aaaaa-aaaa",
+      "name": "John Smith",
+      "photo": "www.photourl.com"
+    },
+    "messages": [
+      {
+        "userId": "aaaaaaaa-aaaaa-aaaa",
+        "contents": "Hello, is this ride available?",
+        "timeStamp": "2021-03-01T00:00:00Z (IN ISO 8601 FORMAT)"
+      }
+    ]
+  }
+]
+```
+
+### /PostMessage
+Request header template:
+```
+{
+    X-User-ID: string, ex "user_guid",
+}
+```
+Request body template:
+```
+{
+  "conversationId": "cccccccc-ccccc-cccc",
+  "contents": "Hello, is this ride available?",
+  "timeStamp": "2021-03-01T00:00:00Z"
+}
+```
+Response payload template:
+```markdown
+// This is the ID of the conversation where the message was posted
+{
+  "id": "cccccccc-ccccc-cccc"
+}
+```
+
 
 ### /findrides/intercity
 Request paylaod template:
