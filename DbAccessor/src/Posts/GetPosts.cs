@@ -16,14 +16,6 @@ namespace GoRideShare.posts
         [Function("PostsGet")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Posts/{user_id?}")] HttpRequest req, string? user_id)
         {
-            if ( user_id != null)
-            {
-                _logger.LogError("Invalid Query Parameter: `user_id` not given");
-                return new BadRequestObjectResult("Invalid Query Parameter: `user_id` not given");
-            } else {
-                _logger.LogInformation($"user_id: {user_id}");
-            }
-
             string? post_id = null;
             if (req.Query.TryGetValue("post_id", out StringValues postIdParam))
             {
