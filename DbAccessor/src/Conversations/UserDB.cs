@@ -1,12 +1,12 @@
-using Microsoft.Extensions.Logging;
+using Google.Protobuf.Reflection;
 using MySql.Data.MySqlClient;
 
-namespace GoRideShare
+namespace GoRideShare.messages
 {
     public static class UserDB
     {
 
-        public static async Task<List<User>> FetchUsers(List<Guid> users)
+        public static async Task<List<User>> FetchUsers(List<string> users)
         {
             // Retrieve the database connection string from environment variables
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
@@ -30,9 +30,9 @@ namespace GoRideShare
 
                             if(!hasNulls)
                             {
-                                var user_id = reader.GetGuid(0);
+                                var user_id = Utilities.GetUserIdFromReader(reader, ordinal: 0);
                                 var name = reader.GetString(1);
-                                var photo = reader.IsDBNull(2) ? "" : reader.GetString(2);
+                                var photo = reader.IsDBNull(2) ? null : reader.GetString(2);
                                 userObjects.Add( new User(user_id, name, photo ) );
                             }
                         }
@@ -42,7 +42,7 @@ namespace GoRideShare
             }
         }
 
-        public static async Task<User?> FetchUser(Guid userId)
+        public static async Task<User?> FetchUser(string userId)
         {
             // Retrieve the database connection string from environment variables
             string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
@@ -64,7 +64,7 @@ namespace GoRideShare
 
                             if(!hasNulls)
                             {
-                                var user_id = reader.GetGuid(0);
+                                var user_id = Utilities.GetUserIdFromReader(reader, ordinal: 0);
                                 var name = reader.GetString(1);
                                 var photo = reader.IsDBNull(2) ? "" : reader.GetString(2);
                                 return new User(user_id, name, photo );

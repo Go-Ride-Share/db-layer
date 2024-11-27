@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -6,11 +5,11 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using Microsoft.Azure.Functions.Worker;
 
-namespace GoRideShare
+namespace GoRideShare.messages
 {
-    public class GetAllConversations
+    public class GetConversations
     {
-        private readonly ILogger<GetAllConversations> _logger;
+        private readonly ILogger<GetConversations> _logger;
         // initialize the MongoDB client lazily. This is a best practice for serverless functions because it is not efficient to establish Mongo connections on every execution of our Azure Function
         public static Lazy<MongoClient> lazyClient = new Lazy<MongoClient>(InitializeMongoClient);
         public static MongoClient client = lazyClient.Value;
@@ -20,16 +19,16 @@ namespace GoRideShare
             return new MongoClient(Environment.GetEnvironmentVariable("MONGODB_ATLAS_URI"));
         }
 
-        public GetAllConversations(ILogger<GetAllConversations> logger)
+        public GetConversations(ILogger<GetConversations> logger)
         {
             _logger = logger;
         }
 
-        [Function("GetAllConversations")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+        [Function("ConversationsGet")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route ="Conversations")] HttpRequest req)
         {
             // If validation result is not null, return the bad request result
-            var validationResult = Utilities.ValidateHeaders(req.Headers, out Guid userId);
+            var validationResult = Utilities.ValidateHeaders(req.Headers, out string userId);
             if (validationResult != null)
             {
                 _logger.LogError("Invalid Headers");
@@ -54,9 +53,9 @@ namespace GoRideShare
                 if(conversations.Count > 0)
                 {
                     // Fetch users from SQL
-                    List<Guid> userIds = [.. conversations.SelectMany(convo => convo.Users).Where(u => u != userId)];
+                    List<string> userIds = [.. conversations.SelectMany(convo => convo.Users).Where(u => u != userId)];
                     List<User> users = await UserDB.FetchUsers(userIds);    //Throws an Exception
-                    Guid otherUser = Guid.Empty;
+                    string otherUser = "";
                     
                     //Connect the User info to their conversation
                     foreach (var convo in conversations)
