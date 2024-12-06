@@ -90,6 +90,8 @@ namespace GoRideShare.posts
                         destination_lng = @Destination_lng,
                         destination = POINT(@Destination_lat, @Destination_lng),
                         description = @Description,
+                        price = @Price,
+                        departure_date = @Departure_date,
                         seats_available = @Seats_available
                     WHERE post_id = @Post_id
                 """;
@@ -107,6 +109,8 @@ namespace GoRideShare.posts
                     command.Parameters.AddWithValue("@Destination_lng",  updatedPost.DestinationLng);
                     command.Parameters.AddWithValue("@Description",      updatedPost.Description);
                     command.Parameters.AddWithValue("@Seats_available",  updatedPost.SeatsAvailable);
+                    command.Parameters.AddWithValue("@Price",            updatedPost.Price);
+                    command.Parameters.AddWithValue("@Departure_date",   updatedPost.DepartureDate);
 
                     try
                     {
